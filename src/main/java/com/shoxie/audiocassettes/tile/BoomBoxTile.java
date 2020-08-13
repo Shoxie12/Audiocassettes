@@ -1,0 +1,168 @@
+package com.shoxie.audiocassettes.tile;
+
+import java.util.List;
+import java.util.Random;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
+import com.shoxie.audiocassettes.ModTileEntities;
+import com.shoxie.audiocassettes.audiocassettes;
+import com.shoxie.audiocassettes.container.BoomBoxContainer;
+import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
+import com.shoxie.audiocassettes.networking.Networking;
+import com.shoxie.audiocassettes.networking.SBoomBoxPlayPacket;
+import com.shoxie.audiocassettes.networking.SBoomBoxStopPacket;
+
+import net.minecraft.block.BlockState;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.Direction;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.INBTSerializable;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.fml.network.NetworkDirection;
+import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.items.IItemHandler;
+import net.minecraftforge.items.ItemStackHandler;
+
+public class BoomBoxTile extends TileEntity implements INamedContainerProvider {
+	private LazyOptional<IItemHandler> handler = LazyOptional.of(this::createHandler);
+	public boolean isPlaying=false;
+	public boolean isLoop=false;
+	public String id = "-";
+	public String owneruid = "-";
+	
+    public BoomBoxTile() {
+		super(ModTileEntities.TILE_BOOMBOX);
+	}
+
+    @Override
+    public Container createMenu(int i, PlayerInventory playerInventory, PlayerEntity playerEntity) {
+        return new BoomBoxContainer(i, this, playerInventory);
+    }
+
+    @Override
+    public void func_230337_a_(BlockState p_230337_1_, CompoundNBT tag) {
+	    CompoundNBT compound = tag.getCompound("cassette");
+	    handler.ifPresent(h -> ((INBTSerializable<CompoundNBT>)h).deserializeNBT(compound));
+	    super.func_230337_a_(p_230337_1_, tag);
+    }
+    
+    @Override
+    public CompoundNBT write(CompoundNBT tag) {
+	    handler.ifPresent(h -> {
+		    CompoundNBT compound = ((INBTSerializable<CompoundNBT>)h).serializeNBT();
+		    tag.put("cassette", compound);
+	    });
+    return super.write(tag);
+    }
+    
+	@Nonnull
+    @Override
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
+        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
+        	return handler.cast();
+        }
+        return super.getCapability(cap, side);
+    }
+    
+	@Override
+	public ITextComponent getDisplayName() {
+		if (!world.isRemote) 
+			return new TranslationTextComponent("block.audiocassettes.boombox");
+		return null;
+	}
+	
+	public void sendUpdates() {
+		world.notifyBlockUpdate(pos, getBlockState(), getBlockState(), 2);
+		markDirty();
+	}
+	
+	@Override
+	@Nullable
+	public SUpdateTileEntityPacket getUpdatePacket() {
+		return new SUpdateTileEntityPacket(this.pos, 3, this.getUpdateTag());
+	}
+
+	@Override
+	public CompoundNBT getUpdateTag() {
+		return this.write(new CompoundNBT());
+	}
+	
+	@Override
+	public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
+		super.onDataPacket(net, pkt);
+		handleUpdateTag(getBlockState(), pkt.getNbtCompound());
+	}
+	
+    private IItemHandler createHandler() {
+        return new ItemStackHandler(1) {
+
+            @Override
+            protected void onContentsChanged(int slot) {
+                markDirty();
+            }
+        };
+    }
+    
+	public ItemStack getCassette() {
+		final ItemStack[] it = new ItemStack[1];
+		    handler.ifPresent(h -> {
+		    it[0] = h.getStackInSlot(0);
+		});
+		return it[0];
+	}
+    
+	public void setSong(int song) {
+		AbstractAudioCassetteItem.setActiveSlot(song, getCassette());
+		sendUpdates();
+	}
+	
+    public void playMusic(ServerPlayerEntity sender) {
+    	ServerWorld sw = sender.getServerWorld(); //this.world.getServer().getWorld(this.world.getDimension().getType());
+    	if(this.isPlaying) {this.stopMusic(sw); this.isPlaying = false;}
+    	this.owneruid = sender.getUniqueID().toString();
+    	List<ServerPlayerEntity> players = sw.getPlayers();
+    	this.isPlaying = true;
+    	for(ServerPlayerEntity player : players) {
+    		if(
+    				Math.abs(player.getPosX() - this.getPos().getX()) < audiocassettes.BoomBoxMaxSoundDistance &&
+    				Math.abs(player.getPosY() - this.getPos().getY()) < audiocassettes.BoomBoxMaxSoundDistance &&
+    				Math.abs(player.getPosZ() - this.getPos().getZ()) < audiocassettes.BoomBoxMaxSoundDistance
+    				)
+    		{
+    			boolean isowner = (player == sender);
+				Networking.INSTANCE.sendTo(new SBoomBoxPlayPacket(this.getPos(),this.getID(), isowner, this.getCassette()), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+    		}
+    	}
+    }
+    
+	public void stopMusic(ServerWorld sw) {
+    	//sender.getServerWorld(); //this.world.getServer().getWorld(this.world.getDimension().getType());
+    	List<ServerPlayerEntity> players = sw.getPlayers();
+    	for(ServerPlayerEntity player : players) {
+			Networking.INSTANCE.sendTo(new SBoomBoxStopPacket(this.getPos(), this.getID()), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+    	}
+	}
+	
+	public String getID() {
+	    if (this.id.equals("-")) { 
+		    Random rand = new Random();
+		    int randomNum = rand.nextInt(10000);
+	        this.id = Integer.toString(randomNum);
+	    }
+	    return this.id;
+	}
+}

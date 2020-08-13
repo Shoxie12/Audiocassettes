@@ -1,0 +1,16 @@
+modLoader="javafml"
+loaderVersion="[30,)"
+issueTrackerURL="https://github.com/Shoxie12/Audiocassettes/issues"
+[[mods]]
+modId="audiocassettes"
+version="1.0"
+displayName="Audiocassettes"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/audiocassettes"
+credits="Thanks to McJty, Kenny Tutorials and many many other for their modding tutorials! This mod is partically based on Walkman by AshIndigo
+"
+authors="Shoxie"
+# The description text for the mod (multi line!) (#mandatory)
+description='''
+This mod adds an audiocassettes.
+...
+'''

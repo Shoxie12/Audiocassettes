@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "facing=north": { "model": "audiocassettes:block/tapedeck" },
+    "facing=south": { "model": "audiocassettes:block/tapedeck", "y": 180 },
+    "facing=west": { "model": "audiocassettes:block/tapedeck", "y": 270 },
+    "facing=east": { "model": "audiocassettes:block/tapedeck", "y": 90 },
+    "facing=up": { "model": "audiocassettes:block/tapedeck", "x": -90 },
+    "facing=down": { "model": "audiocassettes:block/tapedeck", "x": 90 }
+  }
+}

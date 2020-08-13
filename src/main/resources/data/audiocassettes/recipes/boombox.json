@@ -1,0 +1,36 @@
+{
+    "type": "minecraft:crafting_shaped",
+   
+    "pattern":
+    [
+        "III",
+        "NCB",
+        "III"
+    ],
+   
+    "key":
+    {
+        "C":
+        {
+            "item": "audiocassettes:cassetteframe"
+        },
+        "N":
+        {
+            "item": "minecraft:note_block"
+        },
+        "I":
+        {
+            "item": "minecraft:iron_ingot"
+        },
+        "B":
+        {
+            "item": "minecraft:stone_button"
+        }
+    },
+   
+    "result":
+    {
+        "item": "audiocassettes:boombox",
+        "count": 1
+    }
+}
