@@ -1,0 +1,31 @@
+{
+    "type": "minecraft:crafting_shaped",
+   
+    "pattern":
+    [
+        "LL ",
+        "GCG"
+    ],
+   
+    "key":
+    {
+        "L":
+        {
+            "item": "audiocassettes:magnetictape"
+        },
+        "C":
+        {
+            "item": "audiocassettes:cassetteframe"
+        },
+        "G":
+        {
+            "item": "minecraft:gold_ingot"
+        }
+    },
+   
+    "result":
+    {
+        "item": "audiocassettes:goldenaudiocassette",
+        "count": 1
+    }
+}

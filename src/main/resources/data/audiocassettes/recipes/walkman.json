@@ -1,0 +1,30 @@
+{
+    "type": "minecraft:crafting_shaped",
+   
+    "pattern":
+    [
+        "NCB"
+    ],
+   
+    "key":
+    {
+        "C":
+        {
+            "item": "audiocassettes:cassetteframe"
+        },
+        "N":
+        {
+            "item": "minecraft:note_block"
+        },
+        "B":
+        {
+            "item": "minecraft:stone_button"
+        }
+    },
+   
+    "result":
+    {
+        "item": "audiocassettes:walkman",
+        "count": 1
+    }
+}
