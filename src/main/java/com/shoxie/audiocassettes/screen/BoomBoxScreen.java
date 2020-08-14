@@ -74,7 +74,7 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
 	@Override
     protected void func_230451_b_(MatrixStack p_230450_1_, int mouseX, int mouseY) {
     	//super.func_230451_b_(p_230450_1_, mouseY, mouseY);
-        this.field_230712_o_.func_238422_b_(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.boombox"), this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2, 6, 0xffffff);
+        this.field_230712_o_.func_238405_a_(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.boombox").getString(), this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2, 6, 0xffffff);
         int strlen = this.container.title.length()+2;
 
         if(strlen > 12) {

@@ -90,7 +90,7 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
 	@Override
     protected void func_230451_b_(MatrixStack p_230450_1_, int mouseX, int mouseY) {
     	//super.func_230451_b_(p_230450_1_, mouseY, mouseY);
-    	this.field_230712_o_.func_238422_b_(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.walkman"), this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
+    	this.field_230712_o_.func_238405_a_(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.walkman").getString(), this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
         String str = "-";
         if(this.container.getSlot(0).getHasStack())
         {
