@@ -1,47 +1,47 @@
 package com.shoxie.audiocassettes.container;
 
-import com.shoxie.audiocassettes.ModContainers;
 import com.shoxie.audiocassettes.item.WalkmanItem;
 import com.shoxie.audiocassettes.slots.WalkmanSlot;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.SlotItemHandler;
-import net.minecraftforge.items.wrapper.InvWrapper;
 
 public class WalkmanContainer extends Container {
 
-    private IItemHandler playerInventory;
     public int cursong = 1;
 	public int maxsongs = 0;
 	public String stitle = "-";
+	IItemHandler handler;
+	public ItemStack mp;
 	
-    public WalkmanContainer(int windowId, PlayerInventory playerInventory, PlayerEntity playerentity) {
-        super(ModContainers.CONTAINER_WALKMAN, windowId);
-        this.playerInventory = new InvWrapper(playerInventory);
-        ItemStack mp = WalkmanItem.getMPInHand(playerentity);
-        mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
-			this.addSlot(new WalkmanSlot(h, 0, 50, 17,mp, this));
-		});
-
-        layoutPlayerInventorySlots(8, 65);
+	public WalkmanContainer(EntityPlayer player) {
+        this.mp = WalkmanItem.getMPInHand(player);
+        handler = mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
+        addSlotToContainer(new WalkmanSlot(handler, 0, 50, 17, this));
+        layoutPlayerInventorySlots(8, 65, player.inventory);
         }
     
-    private int addSlotRange(IItemHandler handler, int index, int x, int y, int amount, int dx) {
+    private int addSlotRange(IInventory handler, int index, int x, int y, int amount, int dx) {
         for (int i = 0 ; i < amount ; i++) {
-            addSlot(new SlotItemHandler(handler, index, x, y));
+        	addSlotToContainer(new Slot(handler, index, x, y) {
+        		@Override
+        	    public boolean canTakeStack(EntityPlayer playerIn)
+        	    {
+        	        return !(WalkmanItem.getID(this.getStack()) == WalkmanItem.getID(mp));
+        	    }
+        	});
             x += dx;
             index++;
         }
         return index;
     }
 
-    private int addSlotBox(IItemHandler handler, int index, int x, int y, int horAmount, int dx, int verAmount, int dy) {
+    private int addSlotBox(IInventory handler, int index, int x, int y, int horAmount, int dx, int verAmount, int dy) {
         for (int j = 0 ; j < verAmount ; j++) {
             index = addSlotRange(handler, index, x, y, horAmount, dx);
             y += dy;
@@ -49,22 +49,24 @@ public class WalkmanContainer extends Container {
         return index;
     }
 
-    private void layoutPlayerInventorySlots(int leftCol, int topRow) {
+    private void layoutPlayerInventorySlots(int leftCol, int topRow, IInventory playerInventory) {
     	
         addSlotBox(playerInventory, 9, leftCol, topRow, 9, 18, 3, 18);
         topRow += 58;
         addSlotRange(playerInventory, 0, leftCol, topRow, 9, 18);
-    }
+    } 
     
 	@Override
-	public boolean canInteractWith(PlayerEntity playerIn) {
-		return true;
+	public boolean canInteractWith(EntityPlayer playerIn) {
+	    return true;
 	}
 	
 	@Override
-	public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
+	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
 	    ItemStack itemstack = ItemStack.EMPTY;
 	    Slot slot = this.inventorySlots.get(index);
+	    if(WalkmanItem.getID(slot.getStack()) == WalkmanItem.getID(mp)) return ItemStack.EMPTY;
+	    	
 	    if (slot != null && slot.getHasStack()) {
 	        ItemStack stack = slot.getStack();
 	        itemstack = stack.copy();

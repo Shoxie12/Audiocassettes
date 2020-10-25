@@ -1,40 +1,37 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
-
-import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
 import com.shoxie.audiocassettes.item.WalkmanItem;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class WalkmanPrevSongPacket{
-	
-    public WalkmanPrevSongPacket(PacketBuffer buf) {
-    }
-	
-	public WalkmanPrevSongPacket() {
-    }
-	
-    public void toBytes(PacketBuffer buf) {
-    }
-	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-        	ItemStack mp = WalkmanItem.getMPInHand(ctx.get().getSender());
-        	ItemStack cassette = WalkmanItem.getCassette(mp);
-        	
-        	WalkmanItem.setLoop(mp, false);
-            int song = AbstractAudioCassetteItem.getCurrentSlot(cassette);
-            WalkmanItem.setPlaying(mp, false); 
-            WalkmanItem.stopMusic(mp, ctx.get().getSender().getServerWorld(),ctx.get().getSender());
-            
-            if(song > 1)
-            	AbstractAudioCassetteItem.setActiveSlot(song-1, cassette);
-            else if(song < 1)
-            	AbstractAudioCassetteItem.setActiveSlot(1, cassette);
-        	
-        });
-        ctx.get().setPacketHandled(true);
+public class WalkmanPrevSongPacket implements IMessage {
+
+    public WalkmanPrevSongPacket() { }
+    
+    @Override
+    public void fromBytes(ByteBuf buf) { }
+
+    @Override
+    public void toBytes(ByteBuf buf) { }
+
+    public static class Handler implements IMessageHandler<WalkmanPrevSongPacket, IMessage> {
+        @Override
+        public IMessage onMessage(WalkmanPrevSongPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(WalkmanPrevSongPacket message, MessageContext ctx) {
+        	ItemStack mp = WalkmanItem.getMPInHand(ctx.getServerHandler().player);
+        	WalkmanItem.switchSong(false, WalkmanItem.getCassette(mp));
+            if(WalkmanItem.isPlaying(mp)) {
+            	WalkmanItem.stopMusic(mp, ctx.getServerHandler().player.getServerWorld(),ctx.getServerHandler().player);
+            	WalkmanItem.setPlaying(mp, false);
+            }
+        }
     }
 }

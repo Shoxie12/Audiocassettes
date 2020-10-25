@@ -1,47 +1,61 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
+import com.shoxie.audiocassettes.tile.TileTapeDeck;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
-
-import net.minecraft.network.PacketBuffer;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class TapeDeckStartWritingPacket{
+public class TapeDeckStartWritingPacket implements IMessage {
 	
-    private final BlockPos pos;
-    private final ResourceLocation res;
-    private final String sname;
+    private BlockPos pos;
+    private String song;
+    private String sname;
 
-    public TapeDeckStartWritingPacket(PacketBuffer buf) {
-        pos = buf.readBlockPos();
-        res = buf.readResourceLocation();
-        sname = buf.readString(128);
-        
-    }
-
+    public TapeDeckStartWritingPacket() { }
+    
     public TapeDeckStartWritingPacket(BlockPos pos, ResourceLocation res, String sname) {
         this.pos = pos;
-        this.res = res;
+        String song = (res.getResourceDomain()+":"+res.getResourcePath());
+        this.song = song.length() > 127 ? "Untitled" : song;
         this.sname = sname.length() > 127 ? "Untitled" : sname;
     }
-
-    public void toBytes(PacketBuffer buf) {
-        buf.writeBlockPos(pos);
-        buf.writeResourceLocation(res);
-        buf.writeString(sname);
+    
+    @Override
+    public void fromBytes(ByteBuf buf) {
+    	pos = BlockPos.fromLong(buf.readLong());
+    	song = ByteBufUtils.readUTF8String(buf);
+    	sname = ByteBufUtils.readUTF8String(buf);
     }
 
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-    	
-        ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-            TapeDeckTile tile = (TapeDeckTile)sw.getTileEntity(pos);
-            tile.StartWrite(res,sname);
-        });
-        ctx.get().setPacketHandled(true);
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeLong(pos.toLong());
+        ByteBufUtils.writeUTF8String(buf, song);
+        ByteBufUtils.writeUTF8String(buf, sname);
+    }
+
+    public static class Handler implements IMessageHandler<TapeDeckStartWritingPacket, IMessage> {
+        @Override
+        public IMessage onMessage(TapeDeckStartWritingPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(TapeDeckStartWritingPacket message, MessageContext ctx) {
+            EntityPlayerMP playerEntity = ctx.getServerHandler().player;
+            World world = playerEntity.getEntityWorld();
+            if (world.isBlockLoaded(message.pos)) {
+                TileTapeDeck tile = (TileTapeDeck)world.getTileEntity(message.pos);
+                tile.StartWrite(message.song,message.sname);
+            }
+        }
     }
 }

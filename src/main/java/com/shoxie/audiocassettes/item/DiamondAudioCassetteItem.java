@@ -1,12 +1,16 @@
 package com.shoxie.audiocassettes.item;
 
+import net.minecraft.creativetab.CreativeTabs;
+
 public class DiamondAudioCassetteItem extends AbstractAudioCassetteItem{
 
+	private static String name = "diamondaudiocassette";
 	public DiamondAudioCassetteItem() {
-		super();
-		this.name = "diamondaudiocassette";
 		this.maxslots = 25;
 		this.MaxWriteTime = 50;
-		setRegistryName(name);
+		this.setUnlocalizedName(name);
+		this.setRegistryName(name);
+		this.setCreativeTab(CreativeTabs.MISC);
+		this.maxStackSize = 1;
 	}
 }

@@ -1,49 +1,60 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
-
 import com.shoxie.audiocassettes.audiocassettes;
 import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class SWalkmanPlayPacket{
+public class SWalkmanPlayPacket implements IMessage {
 	
-    private final String id;
-    private final String playerid;
-    private final ItemStack cassette;
-    private final boolean isowner;
-	
-    public SWalkmanPlayPacket(PacketBuffer buf) {
-        id = buf.readString();
-        playerid = buf.readString();
-        isowner = buf.readBoolean();
-        cassette = buf.readItemStack();
+    private String id;
+    private String playerid;
+    private boolean isowner;
+    private ItemStack cassette;
+    
+    public SWalkmanPlayPacket() { }
+    
+    public SWalkmanPlayPacket(String id, String playerid, boolean isowner, ItemStack cassette) {
+		this.id = id;
+		this.playerid = playerid;
+		this.isowner = isowner;
+		this.cassette = cassette;
+	}
+
+	@Override
+    public void fromBytes(ByteBuf buf) {
+		id = ByteBufUtils.readUTF8String(buf);
+		playerid = ByteBufUtils.readUTF8String(buf);
+		isowner = buf.readBoolean();
+		cassette = ByteBufUtils.readItemStack(buf);
     }
-	
-	public SWalkmanPlayPacket(String id, String playerid, boolean isowner, ItemStack cassette) {
-        this.id = id;
-        this.playerid = playerid;
-        this.isowner = isowner;
-        this.cassette = cassette;
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+    	ByteBufUtils.writeUTF8String(buf, id);
+    	ByteBufUtils.writeUTF8String(buf, playerid);
+    	buf.writeBoolean(isowner);
+    	ByteBufUtils.writeItemStack(buf, cassette);
     }
-	
-    public void toBytes(PacketBuffer buf) {
-        buf.writeString(id);
-        buf.writeString(playerid);
-        buf.writeBoolean(isowner);
-        buf.writeItemStack(cassette);
-    }
-	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-        	if(cassette.getItem() instanceof AbstractAudioCassetteItem)
-        		audiocassettes.proxy.WalkmanPlay(id,playerid,isowner,
-        				AbstractAudioCassetteItem.getCurrentSong(cassette),
-        				AbstractAudioCassetteItem.getSongTitle(cassette)
+
+    public static class Handler implements IMessageHandler<SWalkmanPlayPacket, IMessage> {
+        @Override
+        public IMessage onMessage(SWalkmanPlayPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(SWalkmanPlayPacket message, MessageContext ctx) {
+        	if(message.cassette.getItem() instanceof AbstractAudioCassetteItem)
+        		audiocassettes.proxy.WalkmanPlay(message.id,message.playerid,message.isowner,
+        				AbstractAudioCassetteItem.getCurrentSong(message.cassette),
+        				AbstractAudioCassetteItem.getSongTitle(message.cassette)
         	);
-        });
-        ctx.get().setPacketHandled(true);
+        }
     }
 }

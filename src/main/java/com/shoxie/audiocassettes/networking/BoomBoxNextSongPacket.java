@@ -1,57 +1,60 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
-
-import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
-import com.shoxie.audiocassettes.tile.BoomBoxTile;
-
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
+import com.shoxie.audiocassettes.tile.TileBoomBox;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class BoomBoxNextSongPacket{
+public class BoomBoxNextSongPacket implements IMessage {
 	
-    private final BlockPos pos;
-    private final boolean manually;
-	
-    public BoomBoxNextSongPacket(PacketBuffer buf) {
-        pos = buf.readBlockPos();
-        manually = buf.readBoolean();
-    }
-	
-    public BoomBoxNextSongPacket(BlockPos pos, boolean manually) {
+    private BlockPos pos;
+    private boolean manually;
+
+    public BoomBoxNextSongPacket() { }
+    
+    public BoomBoxNextSongPacket(BlockPos pos,  boolean manually) {
         this.pos = pos;
         this.manually = manually;
     }
-	
-    public void toBytes(PacketBuffer buf) {
-        buf.writeBlockPos(pos);
+    
+    @Override
+    public void fromBytes(ByteBuf buf) {
+    	pos = BlockPos.fromLong(buf.readLong());
+    	manually = buf.readBoolean();
+    }
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeLong(pos.toLong());
         buf.writeBoolean(manually);
     }
-	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            ServerWorld sw = ctx.get().getSender().getServerWorld();
-            BoomBoxTile tile = (BoomBoxTile)sw.getTileEntity(pos);
-	        if(ctx.get().getSender().getUniqueID().toString().equals(tile.owneruid) || manually) {
-	            ItemStack cassette = tile.getCassette();
-	            int song = AbstractAudioCassetteItem.getCurrentSlot(cassette);
-	            int max = AbstractAudioCassetteItem.getMaxSlots(cassette);
-	            if(song < max)
-	            	tile.setSong(song+1);
-	            else if(song > max)
-	            	tile.setSong(max);
-	            if(manually) {
+
+    public static class Handler implements IMessageHandler<BoomBoxNextSongPacket, IMessage> {
+        @Override
+        public IMessage onMessage(BoomBoxNextSongPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(BoomBoxNextSongPacket message, MessageContext ctx) {
+        	EntityPlayerMP playerMP = ctx.getServerHandler().player;
+        	WorldServer sw = playerMP.getServerWorld();
+            TileBoomBox tile = (TileBoomBox)sw.getTileEntity(message.pos);
+	        if(playerMP.getUniqueID().toString().equals(tile.owneruid) || message.manually) {
+	        	boolean switched = tile.switchSong(true);
+	            if(message.manually) {
 	            	if(tile.isPlaying) {
-	            		tile.stopMusic(sw);
+	            		tile.stopMusic();
 	            		tile.isPlaying = false;
 	            	}
 	            }
-	            else if(song < max) tile.playMusic(ctx.get().getSender());
+	            else if(switched) tile.playMusic(playerMP); else tile.stopMusic();
             }
-        });
-        ctx.get().setPacketHandled(true);
+        }
     }
 }

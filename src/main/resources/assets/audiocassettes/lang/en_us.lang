@@ -1,0 +1,17 @@
+item.diamondaudiocassette.name=Diamond Audio Cassette
+item.goldenaudiocassette.name=Golden Audio Cassette
+item.ironaudiocassette.name=Iron Audio Cassette
+item.walkman.name=Walkman
+item.magnetictape.name=Magnetic Tape
+item.cassetteframe.name=Cassete Frame
+tile.boombox.name=BoomBox
+tile.tapedeck.name=Tape Deck
+sound.audiocassettes.emptysound=--Empty--
+gui.audiocassettes.tapedeck=Tape Deck
+gui.audiocassettes.boombox=BoomBox
+gui.audiocassettes.walkman=Walkman
+gui.audiocassettes.startplaybtn=Play
+gui.audiocassettes.stopplaybtn=Stop
+gui.audiocassettes.startripbtn=Write
+gui.audiocassettes.selectedtrack=Selected Track: 
+

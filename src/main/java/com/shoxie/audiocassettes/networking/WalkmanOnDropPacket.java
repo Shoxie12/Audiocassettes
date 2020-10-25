@@ -1,33 +1,44 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
-
 import com.shoxie.audiocassettes.item.WalkmanItem;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class WalkmanOnDropPacket{
+public class WalkmanOnDropPacket implements IMessage {
 	
-	private final ItemStack mp;
+	private ItemStack mp;
+    
+	public WalkmanOnDropPacket() { }
 	
-    public WalkmanOnDropPacket(PacketBuffer buf) {
-    	mp = buf.readItemStack();
+    public WalkmanOnDropPacket(ItemStack mp) {
+        this.mp = mp;
     }
-	
-	public WalkmanOnDropPacket(ItemStack mp) {
-		this.mp = mp;
+    
+    @Override
+    public void fromBytes(ByteBuf buf) {
+    	mp = ByteBufUtils.readItemStack(buf);
     }
-	
-    public void toBytes(PacketBuffer buf) {
-    	buf.writeItemStack(mp);
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+    	ByteBufUtils.writeItemStack(buf, mp);
     }
-	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-        	if(mp.getItem() instanceof WalkmanItem)
-        		WalkmanItem.stopMusic(mp, ctx.get().getSender().getServerWorld(),null);
-        });
-        ctx.get().setPacketHandled(true);
+
+    public static class Handler implements IMessageHandler<WalkmanOnDropPacket, IMessage> {
+        @Override
+        public IMessage onMessage(WalkmanOnDropPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(WalkmanOnDropPacket message, MessageContext ctx) {
+        	if(message.mp.getItem() instanceof WalkmanItem)
+        		WalkmanItem.stopMusic(message.mp, ctx.getServerHandler().player.getServerWorld(),ctx.getServerHandler().player);
+        }
     }
 }

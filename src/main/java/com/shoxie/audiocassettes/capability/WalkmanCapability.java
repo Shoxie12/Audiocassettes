@@ -1,40 +1,37 @@
 package com.shoxie.audiocassettes.capability;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
 
-public class WalkmanCapability implements ICapabilitySerializable<CompoundNBT> {
+public class WalkmanCapability implements ICapabilitySerializable<NBTTagCompound> {
 	
-    private final ItemStackHandler h = new ItemStackHandler(1);
-    private final LazyOptional<IItemHandler> whandler = LazyOptional.of(() -> h);
+	 IItemHandler h = CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.getDefaultInstance();
 
 	@Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return whandler.cast();
-        }
-        return LazyOptional.empty();
+    public <T> T getCapability(Capability<T> capability, EnumFacing facing) {
+        return hasCapability(capability, facing) ? CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.<T>cast(h) : null;
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.put("walkman", CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.writeNBT(h, null));
+    public NBTTagCompound serializeNBT() {
+        NBTTagCompound nbt = new NBTTagCompound();
+        nbt.setTag("walkman", CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.writeNBT(h, null));
         return nbt;
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.readNBT(h, null, nbt.get("walkman"));
+    public void deserializeNBT(NBTTagCompound nbt) {
+        CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.readNBT(h, null, nbt.getTag("walkman"));
     }
+
+	@Override
+	public boolean hasCapability(Capability<?> capability, EnumFacing facing) {
+		return capability == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY;
+	}
 }

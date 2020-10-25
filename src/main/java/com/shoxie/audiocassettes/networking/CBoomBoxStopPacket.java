@@ -1,36 +1,49 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
-
-import com.shoxie.audiocassettes.tile.BoomBoxTile;
-
-import net.minecraft.network.PacketBuffer;
+import com.shoxie.audiocassettes.tile.TileBoomBox;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.WorldServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class CBoomBoxStopPacket{
+public class CBoomBoxStopPacket implements IMessage {
 	
-    private final BlockPos pos;
-	
-    public CBoomBoxStopPacket(PacketBuffer buf) {
-        pos = buf.readBlockPos();
-    }
-	
-	public CBoomBoxStopPacket(BlockPos pos) {
+    private BlockPos pos;
+    
+    public CBoomBoxStopPacket() { }
+    
+    public CBoomBoxStopPacket(BlockPos pos) {
         this.pos = pos;
     }
-	
-    public void toBytes(PacketBuffer buf) {
-        buf.writeBlockPos(pos);
+    
+    @Override
+    public void fromBytes(ByteBuf buf) {
+    	pos = BlockPos.fromLong(buf.readLong());
     }
-	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-        	BoomBoxTile tile = (BoomBoxTile)sw.getTileEntity(pos);
-            tile.stopMusic(sw);
-        });
-        ctx.get().setPacketHandled(true);
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeLong(pos.toLong());
+    }
+
+    public static class Handler implements IMessageHandler<CBoomBoxStopPacket, IMessage> {
+        @Override
+        public IMessage onMessage(CBoomBoxStopPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(CBoomBoxStopPacket message, MessageContext ctx) {
+            EntityPlayerMP playerMP = ctx.getServerHandler().player;
+            WorldServer world = playerMP.getServerWorld();
+            if (world.isBlockLoaded(message.pos)) {
+            	TileBoomBox tile = (TileBoomBox) world.getTileEntity(message.pos);
+                tile.stopMusic();
+            }
+        }
     }
 }

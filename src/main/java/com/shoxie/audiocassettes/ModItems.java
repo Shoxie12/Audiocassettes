@@ -1,6 +1,7 @@
 package com.shoxie.audiocassettes;
 
 import com.shoxie.audiocassettes.item.WalkmanItem;
+
 import com.shoxie.audiocassettes.item.CassetteFrameItem;
 import com.shoxie.audiocassettes.item.DiamondAudioCassetteItem;
 import com.shoxie.audiocassettes.item.GoldenAudioCassetteItem;
@@ -14,4 +15,5 @@ public class ModItems {
 	public static WalkmanItem WALKMAN = new WalkmanItem();
 	public static CassetteFrameItem CASSETTE_FRAME = new CassetteFrameItem();
 	public static MagneticTapeItem MAGNETIC_TAPE = new MagneticTapeItem();
+	
 }

@@ -1,0 +1,16 @@
+item.diamondaudiocassette.name=Алмазная аудиокассета
+item.goldenaudiocassette.name=Золотая аудиокассета
+item.ironaudiocassette.name=Железная аудиокассета
+item.walkman.name=Кассетный плеер
+item.magnetictape.name=Магнитная лента
+item.cassetteframe.name=Каркас кассеты
+tile.boombox.name=БумБокс
+tile.tapedeck.name=Кассетная дека
+sound.audiocassettes.emptysound=--Тишина--
+gui.audiocassettes.tapedeck=Кассетная дека
+gui.audiocassettes.boombox=БумБокс
+gui.audiocassettes.walkman=Кассетный плеер
+gui.audiocassettes.startplaybtn=Плей
+gui.audiocassettes.stopplaybtn=Стоп
+gui.audiocassettes.startripbtn=Запись
+gui.audiocassettes.selectedtrack=Выбранный трек: 

@@ -1,40 +1,54 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
+import com.shoxie.audiocassettes.tile.TileTapeDeck;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
-
-import net.minecraft.network.PacketBuffer;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class TapeDeckSetSongPacket{
+public class TapeDeckSetSongPacket implements IMessage {
 	
-    private final BlockPos pos;
+    private BlockPos pos;
 	private int song;
 	
-    public TapeDeckSetSongPacket(PacketBuffer buf) {
-        pos = buf.readBlockPos();
-    	song = buf.readInt();
-    }
+	public TapeDeckSetSongPacket() { }
 	
 	public TapeDeckSetSongPacket(BlockPos pos,int song) {
         this.pos = pos;
 		this.song = song;
     }
 	
-    public void toBytes(PacketBuffer buf) {
-        buf.writeBlockPos(pos);
+    @Override
+    public void fromBytes(ByteBuf buf) {
+    	pos = BlockPos.fromLong(buf.readLong());
+    	song = buf.readInt();
+    }
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeLong(pos.toLong());
         buf.writeInt(song);
     }
 	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-            TapeDeckTile tile = (TapeDeckTile)sw.getTileEntity(pos);
-            tile.setSong(song);
-        });
-        ctx.get().setPacketHandled(true);
+    public static class Handler implements IMessageHandler<TapeDeckSetSongPacket, IMessage> {
+        @Override
+        public IMessage onMessage(TapeDeckSetSongPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(TapeDeckSetSongPacket message, MessageContext ctx) {
+            EntityPlayerMP playerEntity = ctx.getServerHandler().player;
+            World world = playerEntity.getEntityWorld();
+            if (world.isBlockLoaded(message.pos)) {
+                TileTapeDeck tile = (TileTapeDeck)world.getTileEntity(message.pos);
+                tile.setSong(message.song);
+            }
+        }
     }
 }

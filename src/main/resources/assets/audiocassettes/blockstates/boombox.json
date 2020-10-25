@@ -1,10 +1,7 @@
 {
-  "variants": {
-    "facing=north": { "model": "audiocassettes:block/boombox" },
-    "facing=south": { "model": "audiocassettes:block/boombox", "y": 180 },
-    "facing=west": { "model": "audiocassettes:block/boombox", "y": 270 },
-    "facing=east": { "model": "audiocassettes:block/boombox", "y": 90 },
-    "facing=up": { "model": "audiocassettes:block/boombox", "x": -90 },
-    "facing=down": { "model": "audiocassettes:block/boombox", "x": 90 }
-  }
+	"variants": {
+		"normal": {
+			"model": "audiocassettes:boombox"
+		}
+	}
 }

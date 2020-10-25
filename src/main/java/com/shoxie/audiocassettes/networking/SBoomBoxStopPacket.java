@@ -1,36 +1,47 @@
 package com.shoxie.audiocassettes.networking;
 
-import java.util.function.Supplier;
-
 import com.shoxie.audiocassettes.audiocassettes;
-import net.minecraft.network.PacketBuffer;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.ByteBufUtils;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
+import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
+import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class SBoomBoxStopPacket{
+public class SBoomBoxStopPacket implements IMessage {
 	
-    private final BlockPos pos;
-    private final String id;
-	
-    public SBoomBoxStopPacket(PacketBuffer buf) {
-        pos = buf.readBlockPos();
-        id = buf.readString();
-    }
-	
-	public SBoomBoxStopPacket(BlockPos pos, String id) {
+    private BlockPos pos;
+    private String ID;
+    
+    public SBoomBoxStopPacket() { }
+    
+    public SBoomBoxStopPacket(BlockPos pos, String ID) {
         this.pos = pos;
-        this.id = id;
+        this.ID = ID;
     }
-	
-    public void toBytes(PacketBuffer buf) {
-        buf.writeBlockPos(pos);
-        buf.writeString(id);
+    
+    @Override
+    public void fromBytes(ByteBuf buf) {
+    	pos = BlockPos.fromLong(buf.readLong());
+    	ID = ByteBufUtils.readUTF8String(buf);
     }
-	
-    public void handle(Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> {
-            audiocassettes.proxy.BoomBoxStop(pos, id);
-        });
-        ctx.get().setPacketHandled(true);
+
+    @Override
+    public void toBytes(ByteBuf buf) {
+        buf.writeLong(pos.toLong());
+        ByteBufUtils.writeUTF8String(buf, ID);
+    }
+
+    public static class Handler implements IMessageHandler<SBoomBoxStopPacket, IMessage> {
+        @Override
+        public IMessage onMessage(SBoomBoxStopPacket message, MessageContext ctx) {
+            FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
+            return null;
+        }
+
+        private void handle(SBoomBoxStopPacket message, MessageContext ctx) {            
+        	audiocassettes.proxy.BoomBoxStop(message.pos, message.ID);
+        }
     }
 }

@@ -1,110 +1,115 @@
 package com.shoxie.audiocassettes.networking;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.fml.common.network.NetworkRegistry;
+import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
+import net.minecraftforge.fml.relauncher.Side;
 
 public class Networking {
 
-    public static SimpleChannel INSTANCE;
+    public static SimpleNetworkWrapper INSTANCE;
     private static int ID = 0;
 
+    public Networking() {
+    }
+    
     public static int nextID() {
         return ID++;
     }
 
+    public static void registerMessages(String channelName) {
+        INSTANCE = NetworkRegistry.INSTANCE.newSimpleChannel(channelName);
+        registerMessages();
+    }
+    
     public static void registerMessages() {
-        INSTANCE = NetworkRegistry.newSimpleChannel(new ResourceLocation(com.shoxie.audiocassettes.audiocassettes.MODID, "audiocassettes"), () -> "1.0", s -> true, s -> true);
-
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		TapeDeckStartWritingPacket.Handler.class,
         		TapeDeckStartWritingPacket.class,
-        		TapeDeckStartWritingPacket::toBytes,
-        		TapeDeckStartWritingPacket::new,
-        		TapeDeckStartWritingPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		TapeDeckSetSongPacket.Handler.class,
         		TapeDeckSetSongPacket.class,
-        		TapeDeckSetSongPacket::toBytes,
-        		TapeDeckSetSongPacket::new,
-        		TapeDeckSetSongPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
-        		CBoomBoxPlayPacket.class,
-        		CBoomBoxPlayPacket::toBytes,
-        		CBoomBoxPlayPacket::new,
-        		CBoomBoxPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		SBoomBoxPlayPacket.class,
-        		SBoomBoxPlayPacket::toBytes,
-        		SBoomBoxPlayPacket::new,
-        		SBoomBoxPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		CBoomBoxStopPacket.class,
-        		CBoomBoxStopPacket::toBytes,
-        		CBoomBoxStopPacket::new,
-        		CBoomBoxStopPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		SBoomBoxStopPacket.class,
-        		SBoomBoxStopPacket::toBytes,
-        		SBoomBoxStopPacket::new,
-        		SBoomBoxStopPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		BoomBoxNextSongPacket.Handler.class,
         		BoomBoxNextSongPacket.class,
-        		BoomBoxNextSongPacket::toBytes,
-        		BoomBoxNextSongPacket::new,
-        		BoomBoxNextSongPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		BoomBoxPrevSongPacket.Handler.class,
         		BoomBoxPrevSongPacket.class,
-        		BoomBoxPrevSongPacket::toBytes,
-        		BoomBoxPrevSongPacket::new,
-        		BoomBoxPrevSongPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		CBoomBoxPlayPacket.Handler.class,
+        		CBoomBoxPlayPacket.class,
+        		nextID(),
+        		Side.SERVER);
+        
+        INSTANCE.registerMessage(
+        		CBoomBoxStopPacket.Handler.class,
+        		CBoomBoxStopPacket.class,
+        		nextID(),
+        		Side.SERVER);
+        
+        INSTANCE.registerMessage(
+        		CWalkmanPlayPacket.Handler.class,
         		CWalkmanPlayPacket.class,
-        		CWalkmanPlayPacket::toBytes,
-        		CWalkmanPlayPacket::new,
-        		CWalkmanPlayPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
-        		SWalkmanPlayPacket.class,
-        		SWalkmanPlayPacket::toBytes,
-        		SWalkmanPlayPacket::new,
-        		SWalkmanPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		CWalkmanStopPacket.Handler.class,
         		CWalkmanStopPacket.class,
-        		CWalkmanStopPacket::toBytes,
-        		CWalkmanStopPacket::new,
-        		CWalkmanStopPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		SBoomBoxPlayPacket.Handler.class,
+        		SBoomBoxPlayPacket.class,
+        		nextID(),
+        		Side.CLIENT);
+        
+        INSTANCE.registerMessage(
+        		SBoomBoxStopPacket.Handler.class,
+        		SBoomBoxStopPacket.class,
+        		nextID(),
+        		Side.CLIENT);
+        
+        INSTANCE.registerMessage(
+        		SWalkmanPlayPacket.Handler.class,
+        		SWalkmanPlayPacket.class,
+        		nextID(),
+        		Side.CLIENT);
+        
+        INSTANCE.registerMessage(
+        		SWalkmanStopPacket.Handler.class,
         		SWalkmanStopPacket.class,
-        		SWalkmanStopPacket::toBytes,
-        		SWalkmanStopPacket::new,
-        		SWalkmanStopPacket::handle);
+        		nextID(),
+        		Side.CLIENT);
         
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		WalkmanNextSongPacket.Handler.class,
         		WalkmanNextSongPacket.class,
-        		WalkmanNextSongPacket::toBytes,
-        		WalkmanNextSongPacket::new,
-        		WalkmanNextSongPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
-        INSTANCE.registerMessage(nextID(),
-        		WalkmanPrevSongPacket.class,
-        		WalkmanPrevSongPacket::toBytes,
-        		WalkmanPrevSongPacket::new,
-        		WalkmanPrevSongPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
+        INSTANCE.registerMessage(
+        		WalkmanOnDropPacket.Handler.class,
         		WalkmanOnDropPacket.class,
-        		WalkmanOnDropPacket::toBytes,
-        		WalkmanOnDropPacket::new,
-        		WalkmanOnDropPacket::handle);
+        		nextID(),
+        		Side.SERVER);
         
+        INSTANCE.registerMessage(
+        		WalkmanPrevSongPacket.Handler.class,
+        		WalkmanPrevSongPacket.class,
+        		nextID(),
+        		Side.SERVER);
     }
 }

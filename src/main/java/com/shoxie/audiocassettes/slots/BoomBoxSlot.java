@@ -7,8 +7,7 @@ import com.shoxie.audiocassettes.container.BoomBoxContainer;
 import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
 import com.shoxie.audiocassettes.networking.CBoomBoxStopPacket;
 import com.shoxie.audiocassettes.networking.Networking;
-import com.shoxie.audiocassettes.tile.BoomBoxTile;
-
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
@@ -28,12 +27,17 @@ public class BoomBoxSlot extends SlotItemHandler{
 	}
 	
 	@Override
+	public boolean canTakeStack(EntityPlayer playerIn) {
+		return !c.getTile().isPlaying;
+	}
+	
+	@Override
 	public void onSlotChanged() {   
-		BoomBoxTile tile = (BoomBoxTile) audiocassettes.proxy.getClientPlayer().world.getTileEntity(c.getPos());
 		
-		if(!this.getHasStack() && audiocassettes.proxy.isBoomBoxPlaying(tile.getID()))
+		if(!this.getHasStack() && audiocassettes.proxy.isBoomBoxPlaying(c.getTile().getID())) {
 			Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(c.getPos()));
-		else {
+		}
+		else if(this.getHasStack()){
 	    	ItemStack stack = this.getStack();
 	    	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
 	    		c.max = AbstractAudioCassetteItem.getMaxSlots(stack);

@@ -3,7 +3,7 @@ package com.shoxie.audiocassettes;
 import com.shoxie.audiocassettes.block.BoomBoxBlock;
 import com.shoxie.audiocassettes.block.TapeDeckBlock;
 
-import net.minecraftforge.registries.ObjectHolder;
+import net.minecraftforge.fml.common.registry.GameRegistry.ObjectHolder;
 
 public class ModBlocks {
 	
