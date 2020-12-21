@@ -14,7 +14,6 @@ import com.shoxie.audiocassettes.networking.BoomBoxNextSongPacket;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.tile.BoomBoxTile;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -42,19 +41,31 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
     public void func_231160_c_() {
         super.func_231160_c_();
         field_230710_m_.clear();
-        func_230480_a_(new Button(guiLeft + 89, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
-        func_230480_a_(new Button(guiLeft + 56, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
-        func_230480_a_(new Button(guiLeft + 128, guiTop + 16, 18, 18, new TranslationTextComponent(" > "), (button) ->  this.Control(3)));
-        func_230480_a_(new Button(guiLeft + 32, guiTop + 16, 18, 18, new TranslationTextComponent(" < "), (button) -> this.Control(4)));
+        func_230480_a_(new Button(
+        		guiLeft + 89, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
+        func_230480_a_(new Button(
+        		guiLeft + 56, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
+        func_230480_a_(new Button(
+        		guiLeft + 128, guiTop + 16, 18, 18, new TranslationTextComponent(" > "), (button) ->  this.Control(3)));
+        func_230480_a_(new Button(
+        		guiLeft + 32, guiTop + 16, 18, 18, new TranslationTextComponent(" < "), (button) -> this.Control(4)));
     }
     private void Control(int opt) {
     	if(this.container.getSlot(0).getStack().getItem() instanceof AbstractAudioCassetteItem) 
     	{
-    		if(opt==1 && !(audiocassettes.proxy.isBoomBoxPlaying(tile.getID()))) Networking.INSTANCE.sendToServer(new CBoomBoxPlayPacket(this.container.getPos()));
-    		if(opt==2 && audiocassettes.proxy.isBoomBoxPlaying(tile.getID())) Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(this.container.getPos()));
-    		if(opt==3) Networking.INSTANCE.sendToServer(new BoomBoxNextSongPacket(this.container.getPos(),true));
-    		if(opt==4) Networking.INSTANCE.sendToServer(new BoomBoxPrevSongPacket(this.container.getPos()));
-    	} 	
+    		if(opt==1 && !(audiocassettes.proxy.isBoomBoxPlaying(tile.getID()))) 
+    			Networking.INSTANCE.sendToServer(new CBoomBoxPlayPacket(this.container.getPos()));
+    		if(opt==2 && audiocassettes.proxy.isBoomBoxPlaying(tile.getID())) 
+    			Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(this.container.getPos()));
+    		if(opt==3) {
+        		titletick = maxtitletick;
+    			Networking.INSTANCE.sendToServer(new BoomBoxNextSongPacket(this.container.getPos(),true));
+    		}
+    		if(opt==4) {
+        		titletick = maxtitletick;
+    			Networking.INSTANCE.sendToServer(new BoomBoxPrevSongPacket(this.container.getPos()));
+    		}
+    	}	
     }
 
     @Override
@@ -73,8 +84,10 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
 
 	@Override
     protected void func_230451_b_(MatrixStack p_230450_1_, int mouseX, int mouseY) {
-    	//super.func_230451_b_(p_230450_1_, mouseY, mouseY);
-        this.field_230712_o_.func_238405_a_(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.boombox").getString(), this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2, 6, 0xffffff);
+        this.field_230712_o_.func_238405_a_(p_230450_1_,
+        		new TranslationTextComponent("gui.audiocassettes.boombox").getString(), 
+        		this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2,
+        		6, 0xffffff);
         int strlen = this.container.title.length()+2;
 
         if(strlen > 12) {
@@ -99,7 +112,9 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
         }
 
         String str = (" "+this.container.title+" ").substring(tstart < 0 ? 0 : tstart, tend < 0 ? 0 : tstart > tend ? tstart : tend);
-        drawScaledString(p_230450_1_, Minecraft.getInstance().fontRenderer, (this.container.max>0&&this.container.getSlot(0).getHasStack()? this.container.curr+". "+str: "- "), 69, 22, 0.7F, 0xffffff);
+        drawScaledString(p_230450_1_, this.field_230706_i_.fontRenderer,
+        		(this.container.max>0&&this.container.getSlot(0).getHasStack()? this.container.curr+". "+str: "- "),
+        		69, 22, 0.7F, 0xffffff);
     }
     
     public void drawScaledString(MatrixStack p_230450_1_, FontRenderer fontRendererIn, String text, int x, int y, float size, int color) {

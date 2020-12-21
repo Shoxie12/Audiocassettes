@@ -43,7 +43,7 @@ public class TapeDeckContainer extends Container {
 	
 	@Override
 	public ItemStack transferStackInSlot(PlayerEntity playerIn, int index) {
-		tileEntity.cancelWrite();
+		tileEntity.stopWrite();
 	    ItemStack itemstack = ItemStack.EMPTY;
 	    Slot slot = this.inventorySlots.get(index);
 	    if (slot != null && slot.getHasStack()) {
@@ -108,6 +108,7 @@ public class TapeDeckContainer extends Container {
 	}
 
 	public int getWriteTime(int p) {
+		if(!this.inventorySlots.get(1).getHasStack()) return 0;
 		Item it = this.inventorySlots.get(1).getStack().getItem();
         int i1 = tileEntity.getCurWriteTime();
         int i2 = 0;
@@ -118,6 +119,10 @@ public class TapeDeckContainer extends Container {
         return i2 > 0 && i1 > 0 ? i1 * p / i2 : 0;
 	}
 
+	public TapeDeckTile getTile() {
+		return this.tileEntity;
+	}
+	
 	public BlockPos getPos() {
 		return tileEntity.getPos();
 	}

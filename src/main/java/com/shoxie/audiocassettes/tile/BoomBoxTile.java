@@ -28,7 +28,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.server.ServerWorld;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.INBTSerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -40,7 +39,6 @@ import net.minecraftforge.items.ItemStackHandler;
 public class BoomBoxTile extends TileEntity implements INamedContainerProvider {
 	private LazyOptional<IItemHandler> handler = LazyOptional.of(this::createHandler);
 	public boolean isPlaying=false;
-	public boolean isLoop=false;
 	public String id = "-";
 	public String owneruid = "-";
 	
@@ -130,11 +128,40 @@ public class BoomBoxTile extends TileEntity implements INamedContainerProvider {
 		sendUpdates();
 	}
 	
+	public boolean switchSong(boolean forward) {
+		
+		if(audiocassettes.skipemptyslots) {
+			int song = AbstractAudioCassetteItem.getNonEmptySlot(getCassette(),forward);
+			if(song != -1) setSong(song);
+			else return false;
+		}
+	    else {
+				int cur=AbstractAudioCassetteItem.getCurrentSlot(getCassette());
+				int max=AbstractAudioCassetteItem.getMaxSlots(getCassette());
+				if(forward) {
+			        if(cur < max)
+			            this.setSong(cur+1);
+			        else if(cur > max)
+			            this.setSong(max);
+			        else return false;
+				}
+				else {
+		            if(cur > 1)
+		            	this.setSong(cur-1);
+		            else if(cur < 1)
+		            	this.setSong(1);
+		            else return false;
+				}
+	    }
+		sendUpdates();
+		return true;
+	}
+    
     public void playMusic(ServerPlayerEntity sender) {
-    	ServerWorld sw = sender.getServerWorld(); //this.world.getServer().getWorld(this.world.getDimension().getType());
-    	if(this.isPlaying) {this.stopMusic(sw); this.isPlaying = false;}
-    	this.owneruid = sender.getUniqueID().toString();
-    	List<ServerPlayerEntity> players = sw.getPlayers();
+    	
+    	List<ServerPlayerEntity> players = this.getWorld().getServer().getPlayerList().getPlayers();
+    	owneruid = sender.getUniqueID().toString();
+    	
     	this.isPlaying = true;
     	for(ServerPlayerEntity player : players) {
     		if(
@@ -149,9 +176,8 @@ public class BoomBoxTile extends TileEntity implements INamedContainerProvider {
     	}
     }
     
-	public void stopMusic(ServerWorld sw) {
-    	//sender.getServerWorld(); //this.world.getServer().getWorld(this.world.getDimension().getType());
-    	List<ServerPlayerEntity> players = sw.getPlayers();
+	public void stopMusic() {
+    	List<ServerPlayerEntity> players = this.getWorld().getServer().getPlayerList().getPlayers();
     	for(ServerPlayerEntity player : players) {
 			Networking.INSTANCE.sendTo(new SBoomBoxStopPacket(this.getPos(), this.getID()), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
     	}

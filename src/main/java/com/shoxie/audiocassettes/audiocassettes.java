@@ -36,14 +36,15 @@ import com.shoxie.audiocassettes.tile.TapeDeckTile;
 public class audiocassettes
 {
     public static final String MODID = "audiocassettes";
-    public static final String NAME = "Audio Cassettes";
-    public static final String VERSION = "1.0";
+    public static final String NAME = "AudioCassettes";
+    public static final String VERSION = "1.1";
     public static Logger logger = LogManager.getLogger(MODID);
     public static final IProxy proxy = DistExecutor.runForDist(() -> () -> new ClientProxy(), () -> () -> new ServerProxy());
     public static final String EMPTY_SOUND = "empty";
     public static int WalkmanMaxSoundDistance = 28;
     public static int BoomBoxMaxSoundDistance = 64;
     public static boolean announceenabled = true;
+    public static boolean skipemptyslots = true;
 	
     public audiocassettes() {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(RegistryEvents::ScreenInit);
@@ -52,6 +53,7 @@ public class audiocassettes
         BoomBoxMaxSoundDistance = ModConfig.getBoomBoxMaxDist();
         WalkmanMaxSoundDistance = ModConfig.getWalkmanMaxDist();
         announceenabled = ModConfig.isNowPlayingAnnounce();
+        skipemptyslots = ModConfig.SkipEmptySlots();
     }
     
     @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -84,8 +86,10 @@ public class audiocassettes
         	e.getRegistry().register(ModItems.WALKMAN);
         	e.getRegistry().register(ModItems.MAGNETIC_TAPE);
         	e.getRegistry().register(ModItems.CASSETTE_FRAME);
-        	e.getRegistry().register(new BlockItem(ModBlocks.TAPE_DECK, new Item.Properties().group(ItemGroup.DECORATIONS)).setRegistryName(ModBlocks.TAPE_DECK.getRegistryName()));
-        	e.getRegistry().register(new BlockItem(ModBlocks.BOOMBOX, new Item.Properties().group(ItemGroup.DECORATIONS)).setRegistryName(ModBlocks.BOOMBOX.getRegistryName()));
+        	e.getRegistry().register(
+        			new BlockItem(ModBlocks.TAPE_DECK, new Item.Properties().group(ItemGroup.DECORATIONS)).setRegistryName(ModBlocks.TAPE_DECK.getRegistryName()));
+        	e.getRegistry().register(
+        			new BlockItem(ModBlocks.BOOMBOX, new Item.Properties().group(ItemGroup.DECORATIONS)).setRegistryName(ModBlocks.BOOMBOX.getRegistryName()));
         }
         
         @SubscribeEvent

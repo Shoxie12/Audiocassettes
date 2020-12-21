@@ -14,7 +14,8 @@ public class Networking {
     }
 
     public static void registerMessages() {
-        INSTANCE = NetworkRegistry.newSimpleChannel(new ResourceLocation(com.shoxie.audiocassettes.audiocassettes.MODID, "audiocassettes"), () -> "1.0", s -> true, s -> true);
+        INSTANCE = NetworkRegistry.newSimpleChannel(
+        		new ResourceLocation(com.shoxie.audiocassettes.audiocassettes.MODID, "audiocassettes"), () -> "1.0", s -> true, s -> true);
 
         INSTANCE.registerMessage(nextID(),
         		TapeDeckStartWritingPacket.class,
@@ -105,6 +106,12 @@ public class Networking {
         		WalkmanOnDropPacket::toBytes,
         		WalkmanOnDropPacket::new,
         		WalkmanOnDropPacket::handle);
+        
+        INSTANCE.registerMessage(nextID(),
+        		TapeDeckStopWritePacket.class,
+        		TapeDeckStopWritePacket::toBytes,
+        		TapeDeckStopWritePacket::new,
+        		TapeDeckStopWritePacket::handle);
         
     }
 }

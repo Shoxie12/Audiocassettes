@@ -10,8 +10,8 @@ import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.networking.TapeDeckSetSongPacket;
 import com.shoxie.audiocassettes.networking.TapeDeckStartWritingPacket;
+import com.shoxie.audiocassettes.networking.TapeDeckStopWritePacket;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -34,12 +34,15 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
     public void func_231160_c_() {
         super.func_231160_c_();
         field_230710_m_.clear();
-        func_230480_a_(new Button(guiLeft + 58, guiTop + 60, 51, 20, new TranslationTextComponent("gui.audiocassettes.startripbtn"), (button) -> {
+        func_230480_a_(new Button(guiLeft + 16, guiTop + 55, 44, 20, new TranslationTextComponent("gui.audiocassettes.startripbtn"), (button) -> {
         	ItemStack stack = this.container.getSlot(1).getStack();
-        	MusicDiscItem mdi = (MusicDiscItem) this.container.getSlot(0).getStack().getItem();
-        	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
-	        	if(AbstractAudioCassetteItem.getMaxSlots(stack) > 0 && AbstractAudioCassetteItem.getCurrentSlot(stack)>0)
-	        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(), mdi.getSound().getName(),mdi.func_234801_g_().getString()));
+        	ItemStack disc = this.container.getSlot(0).getStack();
+        	if(stack.getItem() instanceof AbstractAudioCassetteItem && disc.getItem() instanceof MusicDiscItem) {
+	        	MusicDiscItem mdi = (MusicDiscItem) this.container.getSlot(0).getStack().getItem();
+	        	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
+		        	if(AbstractAudioCassetteItem.getMaxSlots(stack) > 0 && AbstractAudioCassetteItem.getCurrentSlot(stack)>0)
+		        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(), mdi.getSound().getName(),mdi.func_234801_g_().getString(), false));
+	        	}
         	}
         }));
         
@@ -64,6 +67,20 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
 	        		Networking.INSTANCE.sendToServer(new TapeDeckSetSongPacket(this.container.getPos(),++cursong));
         	}
         }));
+        
+        func_230480_a_(new Button(guiLeft + 111, guiTop + 55, 47, 20, new TranslationTextComponent("gui.audiocassettes.erasewrbtn"), (button) -> {
+        	if(this.container.isWriting()) {
+        		Networking.INSTANCE.sendToServer(new TapeDeckStopWritePacket(this.container.getPos()));
+        		return;
+        	}
+        	ItemStack stack = this.container.getSlot(1).getStack();
+        	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
+	        	if(AbstractAudioCassetteItem.getMaxSlots(stack) > 0 && AbstractAudioCassetteItem.getCurrentSlot(stack)>0)
+	        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(),
+	        				new ResourceLocation("audiocassettes"+":"+"empty"),"--Empty--", true)
+	        				);
+	        	}
+        }));
     }
     
     @Override
@@ -77,8 +94,10 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
     protected void func_230451_b_(MatrixStack p_230450_1_, int mouseX, int mouseY) {
     	ItemStack stack = this.container.getSlot(1).getStack();
     	int max = stack.getItem() instanceof AbstractAudioCassetteItem ? AbstractAudioCassetteItem.getMaxSlots(stack) : 0;
-    	func_238476_c_(p_230450_1_,Minecraft.getInstance().fontRenderer, I18n.format("gui.audiocassettes.tapedeck"), 10, 10, 0xffffff);
-    	drawScaledString(p_230450_1_, Minecraft.getInstance().fontRenderer, I18n.format("gui.audiocassettes.selectedtrack")+": "+(max>0? AbstractAudioCassetteItem.getCurrentSlot(stack) : "-"), 101, 13, 0.7F, 0xffffff);
+    	func_238476_c_(p_230450_1_,field_230706_i_.fontRenderer, I18n.format("gui.audiocassettes.tapedeck"), 10, 10, 0xffffff);
+    	drawScaledString(p_230450_1_, field_230706_i_.fontRenderer, 
+    			I18n.format("gui.audiocassettes.selectedtrack")+": "+(max>0? AbstractAudioCassetteItem.getCurrentSlot(stack) : "-"),
+    			101, 13, 0.7F, 0xffffff);
     }
 
     @Override

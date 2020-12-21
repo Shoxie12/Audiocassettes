@@ -23,6 +23,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.world.IBlockReader;
 import net.minecraft.world.World;
+import net.minecraftforge.common.ToolType;
 import net.minecraftforge.fml.network.NetworkHooks;
 import net.minecraftforge.items.CapabilityItemHandler;
 
@@ -31,7 +32,9 @@ public class TapeDeckBlock extends Block{
     public TapeDeckBlock () {
         super(Properties.create(Material.IRON)
         		.sound(SoundType.METAL)
-        		.hardnessAndResistance(3.0f)
+        		.hardnessAndResistance(2.0f)
+        		.harvestLevel(1)
+        		.harvestTool(ToolType.PICKAXE)
         );
         setRegistryName(name);
     }
@@ -56,7 +59,7 @@ public class TapeDeckBlock extends Block{
                 return ActionResultType.SUCCESS;
             }
         }
-        return super.onBlockActivated(state, world, pos, player, hand, result);
+        return ActionResultType.PASS;
     }
     
     @Override
@@ -67,7 +70,11 @@ public class TapeDeckBlock extends Block{
     }
 
     public static Direction getFacingFromEntity(BlockPos clickedBlock, LivingEntity entity) {
-        return Direction.getFacingFromVector((float) (entity.getPosX() - clickedBlock.getX()), (float) (entity.getPosY() - clickedBlock.getY()), (float) (entity.getPosZ() - clickedBlock.getZ()));
+        return Direction.getFacingFromVector(
+        		(float) (entity.getPosX() - clickedBlock.getX()), 
+        		(float) (entity.getPosY() - clickedBlock.getY()), 
+        		(float) (entity.getPosZ() - clickedBlock.getZ())
+        		);
     }
 
     @Override
@@ -77,7 +84,7 @@ public class TapeDeckBlock extends Block{
     
     @Override
     public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-        if (state.hasTileEntity() && state.getBlock() != newState.getBlock()) {
+    	if (state.hasTileEntity() && state.getBlock() != newState.getBlock()) {
         	worldIn.getTileEntity(pos).getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
                 for (int i = 0; i < h.getSlots(); i++) {
                     spawnAsEntity(worldIn, pos, h.getStackInSlot(i));

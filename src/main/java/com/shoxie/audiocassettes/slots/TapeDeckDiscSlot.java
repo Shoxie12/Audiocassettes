@@ -22,7 +22,7 @@ public class TapeDeckDiscSlot extends SlotItemHandler{
 	
 	@Override
 	public void onSlotChanged() {
-		tile.cancelWrite();
+		tile.stopWrite();
 	    this.inventory.markDirty();
 	}
 }

@@ -12,7 +12,7 @@ import net.minecraftforge.fml.network.NetworkEvent;
 public class TapeDeckSetSongPacket{
 	
     private final BlockPos pos;
-	private int song;
+	private final int song;
 	
     public TapeDeckSetSongPacket(PacketBuffer buf) {
         pos = buf.readBlockPos();

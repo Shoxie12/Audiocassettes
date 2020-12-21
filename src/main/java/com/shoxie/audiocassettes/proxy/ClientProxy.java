@@ -11,12 +11,12 @@ import com.shoxie.audiocassettes.audio.WalkmanSound;
 import com.shoxie.audiocassettes.item.WalkmanItem;
 import com.shoxie.audiocassettes.networking.BoomBoxNextSongPacket;
 import com.shoxie.audiocassettes.networking.WalkmanNextSongPacket;
+import com.shoxie.audiocassettes.networking.WalkmanOnDropPacket;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.screen.BoomBoxScreen;
 import com.shoxie.audiocassettes.screen.WalkmanScreen;
 import com.shoxie.audiocassettes.screen.TapeDeckScreen;
 import com.shoxie.audiocassettes.tile.BoomBoxTile;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.ISound;
 import net.minecraft.client.gui.ScreenManager;
@@ -46,12 +46,12 @@ public class ClientProxy implements IProxy {
         	if(isowner) {
         		mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
         		WalkmanItem.setPlaying(mp, true);
-        		WalkmanItem.setLoop(mp, true);
         	}
         	
-        	PlayerEntity owner = isowner ? getClientPlayer() : getClientPlayer().world.getPlayerByUuid(UUID.fromString(playerid));
+        	PlayerEntity owner = isowner ? getClientPlayer() : getClientWorld().getPlayerByUuid(UUID.fromString(playerid));
         	Walkmansounds.put(id,new WalkmanSound(owner, snd)); 
-        	if(audiocassettes.announceenabled) mc.ingameGUI.setOverlayMessage(net.minecraftforge.common.ForgeHooks.newChatWithLinks(I18n.format("record.nowPlaying", songtitle)), true);
+        	if(audiocassettes.announceenabled) 
+        		mc.ingameGUI.setOverlayMessage(net.minecraftforge.common.ForgeHooks.newChatWithLinks(I18n.format("record.nowPlaying", songtitle)), true);
             mc.getSoundHandler().play((ISound) Walkmansounds.get(id));
 
             new Thread()
@@ -61,33 +61,31 @@ public class ClientProxy implements IProxy {
                 public void run()
                 {
                 	boolean isPlaying = false;
-                	boolean isLoop = false;
                 	ItemStack mp = ItemStack.EMPTY;
                 	if(isowner) {
 	                	mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
-	                    if(mp.getItem() instanceof WalkmanItem) {
-	                    	isPlaying = WalkmanItem.IsPlaying(mp);
-	                    	isLoop = WalkmanItem.IsLoop(mp);
-	                    }
+	                    if(mp.getItem() instanceof WalkmanItem) 
+	                    	isPlaying = WalkmanItem.isPlaying(mp);
                 	}
-                    while(mc.getSoundHandler().isPlaying(Walkmansounds.get(id))) {
+                	boolean presentMP = isowner && WalkmanItem.isPlayerOwnMp(getClientPlayer(),id);
+                    while(mc.getSoundHandler().isPlaying(Walkmansounds.get(id)) && presentMP) {
                     	try {
     						Thread.sleep(1000);
+    						presentMP = WalkmanItem.isPlayerOwnMp(getClientPlayer(),id);
     					} catch (InterruptedException e) {
-    						System.out.println(e.getMessage());
+    						audiocassettes.logger.warn(e.getMessage());
     					}
                     }
-                    
                 	if(isowner) {
-	                    mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
-	                    if(mp.getItem() instanceof WalkmanItem) {
-		                    WalkmanItem.setPlaying(mp, false); isPlaying = false;
-		                    isLoop = WalkmanItem.IsLoop(mp);
-	                    }
-	                    
-                    if(isLoop && getClientWorld() != null) 
-                    	Networking.INSTANCE.sendToServer(new WalkmanNextSongPacket(id));
-                	
+                		if(presentMP) {
+		                    mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
+		                    if(mp.getItem() instanceof WalkmanItem) 
+			                    isPlaying = WalkmanItem.isPlaying(mp);
+		                    
+		                    if(isPlaying && getClientWorld() != null) 
+		                    	Networking.INSTANCE.sendToServer(new WalkmanNextSongPacket(id));
+	                	}
+                		else Networking.INSTANCE.sendToServer(new WalkmanOnDropPacket(id));
                 	}
                 }
             }.start();
@@ -99,7 +97,6 @@ public class ClientProxy implements IProxy {
 		if(isowner) {
 			ItemStack mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
         	if(mp.getItem() instanceof WalkmanItem) {
-		        WalkmanItem.setLoop(mp, false);
 		        WalkmanItem.setPlaying(mp, false);
         	}
 		}
@@ -115,11 +112,11 @@ public class ClientProxy implements IProxy {
         	BoomBoxTile tile = (BoomBoxTile)getClientWorld().getTileEntity(pos);
         	cpsounds.put(id,new BoomBoxSound(snd,pos.getX(),pos.getY(),pos.getZ(),getClientPlayer()));
         	tile.id = id;
-            if (!tile.isPlaying && !mc.getSoundHandler().isPlaying(cpsounds.get(id))) {
-            	if(!tile.isLoop) tile.isLoop=true;
-            	if(audiocassettes.announceenabled) mc.ingameGUI.setOverlayMessage(net.minecraftforge.common.ForgeHooks.newChatWithLinks(I18n.format("record.nowPlaying", songtitle)), true);
+        	if (!mc.getSoundHandler().isPlaying(cpsounds.get(id))) {
+        		tile.isPlaying=true;
+            	if(audiocassettes.announceenabled) 
+            		mc.ingameGUI.setOverlayMessage(net.minecraftforge.common.ForgeHooks.newChatWithLinks(I18n.format("record.nowPlaying", songtitle)), true);
                 mc.getSoundHandler().play((ISound) cpsounds.get(id));
-                tile.isPlaying = true;
             }
 
             new Thread()
@@ -131,12 +128,11 @@ public class ClientProxy implements IProxy {
                     	try {
     						Thread.sleep(1000);
     					} catch (InterruptedException e) {
-    						System.out.println(e.getMessage());
+    						audiocassettes.logger.warn(e.getMessage());
     					}
                     }
 
-                    tile.isPlaying = false;
-                    if(tile.isLoop && getClientWorld() != null && isowner) {
+                    if(!tile.isRemoved() && tile.isPlaying && getClientWorld() != null && isowner) {
                     	Networking.INSTANCE.sendToServer(new BoomBoxNextSongPacket(tile.getPos(), false));
                     }
                 }
@@ -150,10 +146,8 @@ public class ClientProxy implements IProxy {
         Minecraft.getInstance().enqueue(() -> {
         	BoomBoxTile tile = (BoomBoxTile)getClientWorld().getTileEntity(pos);
             mc.getSoundHandler().stop(cpsounds.get(id));
-            if(tile != null) {
-		        tile.isLoop = false;
+            if(tile != null)
 		        tile.isPlaying = false;
-            }
         });
 	}
 	
