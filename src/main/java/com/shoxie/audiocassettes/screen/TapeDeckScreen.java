@@ -31,22 +31,22 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
     }
 
     @Override
-    public void func_231160_c_() {
-        super.func_231160_c_();
-        field_230710_m_.clear();
-        func_230480_a_(new Button(guiLeft + 16, guiTop + 55, 44, 20, new TranslationTextComponent("gui.audiocassettes.startripbtn"), (button) -> {
+    public void init() {
+        super.init();
+        buttons.clear();
+        addButton(new Button(guiLeft + 16, guiTop + 55, 44, 20, new TranslationTextComponent("gui.audiocassettes.startripbtn"), (button) -> {
         	ItemStack stack = this.container.getSlot(1).getStack();
         	ItemStack disc = this.container.getSlot(0).getStack();
         	if(stack.getItem() instanceof AbstractAudioCassetteItem && disc.getItem() instanceof MusicDiscItem) {
 	        	MusicDiscItem mdi = (MusicDiscItem) this.container.getSlot(0).getStack().getItem();
 	        	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
 		        	if(AbstractAudioCassetteItem.getMaxSlots(stack) > 0 && AbstractAudioCassetteItem.getCurrentSlot(stack)>0)
-		        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(), mdi.getSound().getName(),mdi.func_234801_g_().getString(), false));
+		        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(), mdi.getSound().getName(),mdi.getDescription().getString(), false));
 	        	}
         	}
         }));
         
-        func_230480_a_(new Button(guiLeft + 54, guiTop + 33, 14, 14, new TranslationTextComponent(" < "), (button) -> {
+        addButton(new Button(guiLeft + 54, guiTop + 33, 14, 14, new TranslationTextComponent(" < "), (button) -> {
         	if(this.container.isWriting()) return;
         	ItemStack stack = this.container.getSlot(1).getStack();
         	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
@@ -57,7 +57,7 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
         	}
         }));
         
-        func_230480_a_(new Button(guiLeft + 100, guiTop + 33, 14, 14, new TranslationTextComponent(" > "), (button) -> {
+        addButton(new Button(guiLeft + 100, guiTop + 33, 14, 14, new TranslationTextComponent(" > "), (button) -> {
         	if(this.container.isWriting()) return;
         	ItemStack stack = this.container.getSlot(1).getStack();
         	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
@@ -68,7 +68,7 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
         	}
         }));
         
-        func_230480_a_(new Button(guiLeft + 111, guiTop + 55, 47, 20, new TranslationTextComponent("gui.audiocassettes.erasewrbtn"), (button) -> {
+        addButton(new Button(guiLeft + 111, guiTop + 55, 47, 20, new TranslationTextComponent("gui.audiocassettes.erasewrbtn"), (button) -> {
         	if(this.container.isWriting()) {
         		Networking.INSTANCE.sendToServer(new TapeDeckStopWritePacket(this.container.getPos()));
         		return;
@@ -84,36 +84,36 @@ public class TapeDeckScreen extends ContainerScreen<TapeDeckContainer> {
     }
     
     @Override
-    public void func_230430_a_(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
-        this.func_230446_a_(p_230430_1_);
-        super.func_230430_a_(p_230430_1_, p_230430_2_, p_230430_3_, p_230430_4_);
-        this.func_230459_a_(p_230430_1_,p_230430_2_, p_230430_3_);
+    public void render(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
+        this.renderBackground(p_230430_1_);
+        super.render(p_230430_1_, p_230430_2_, p_230430_3_, p_230430_4_);
+        this.renderHoveredTooltip(p_230430_1_,p_230430_2_, p_230430_3_);
     }
 
 	@Override
-    protected void func_230451_b_(MatrixStack p_230450_1_, int mouseX, int mouseY) {
+    protected void drawGuiContainerForegroundLayer(MatrixStack p_230450_1_, int mouseX, int mouseY) {
     	ItemStack stack = this.container.getSlot(1).getStack();
     	int max = stack.getItem() instanceof AbstractAudioCassetteItem ? AbstractAudioCassetteItem.getMaxSlots(stack) : 0;
-    	func_238476_c_(p_230450_1_,field_230706_i_.fontRenderer, I18n.format("gui.audiocassettes.tapedeck"), 10, 10, 0xffffff);
-    	drawScaledString(p_230450_1_, field_230706_i_.fontRenderer, 
+    	drawString(p_230450_1_,minecraft.fontRenderer, I18n.format("gui.audiocassettes.tapedeck"), 10, 10, 0xffffff);
+    	drawScaledString(p_230450_1_, minecraft.fontRenderer, 
     			I18n.format("gui.audiocassettes.selectedtrack")+": "+(max>0? AbstractAudioCassetteItem.getCurrentSlot(stack) : "-"),
     			101, 13, 0.7F, 0xffffff);
     }
 
     @Override
-    protected void func_230450_a_(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
+    protected void drawGuiContainerBackgroundLayer(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
     	GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.field_230706_i_.getTextureManager().bindTexture(GUI);
-        this.func_238474_b_(p_230450_1_, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+        this.minecraft.getTextureManager().bindTexture(GUI);
+        this.blit(p_230450_1_, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
         int i = ((TapeDeckContainer)this.container).getWriteTime(24);
-        if(this.container.isWriting()) this.func_238474_b_(p_230450_1_, this.guiLeft + 72, this.guiTop + 32, 176, 14, 24 - i, 17);
-        else this.func_238474_b_(p_230450_1_, this.guiLeft + 72, this.guiTop + 32, 176, 14, 0, 17);
+        if(this.container.isWriting()) this.blit(p_230450_1_, this.guiLeft + 72, this.guiTop + 32, 176, 14, 24 - i, 17);
+        else this.blit(p_230450_1_, this.guiLeft + 72, this.guiTop + 32, 176, 14, 0, 17);
     }
     
     public void drawScaledString(MatrixStack p_230450_1_, FontRenderer fontRendererIn, String text, int x, int y, float size, int color) {
         GL11.glScalef(size,size,size);
         float mSize = (float)Math.pow(size,-1);
-        this.func_238476_c_(p_230450_1_, fontRendererIn,text,Math.round(x / size),Math.round(y / size),color);
+        drawString(p_230450_1_, fontRendererIn,text,Math.round(x / size),Math.round(y / size),color);
         GL11.glScalef(mSize,mSize,mSize);
     }
 }

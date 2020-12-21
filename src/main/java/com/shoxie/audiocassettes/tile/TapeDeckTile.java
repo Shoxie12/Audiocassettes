@@ -77,11 +77,11 @@ public class TapeDeckTile extends TileEntity implements ITickableTileEntity, INa
      }
     
     @Override
-    public void func_230337_a_(BlockState p_230337_1_, CompoundNBT tag) {
+    public void read(BlockState p_230337_1_, CompoundNBT tag) {
 	    CompoundNBT compound = tag.getCompound("inv");
 	    WriteTime = tag.getInt("WriteTime");
 	    handler.ifPresent(h -> ((INBTSerializable<CompoundNBT>)h).deserializeNBT(compound));
-	    super.func_230337_a_(p_230337_1_, tag);
+	    super.read(p_230337_1_, tag);
     }
     
     @Override

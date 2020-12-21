@@ -21,7 +21,7 @@ public class WalkmanSound extends TickableSound {
 
     public void tick() {
         if (!this.player.isAlive()) 
-            this.func_239509_o_();
+        	this.finishPlaying();
         else {
             this.x = (float) this.player.getPosX();
             this.y = (float) this.player.getPosY();

@@ -41,13 +41,13 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
     }
 	
     @Override
-    public void func_231160_c_() {
-        super.func_231160_c_();
-        field_230710_m_.clear();
-        func_230480_a_(new Button(guiLeft + 89, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
-        func_230480_a_(new Button(guiLeft + 56, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
-        func_230480_a_(new Button(guiLeft + 128, guiTop + 16, 18, 18, new StringTextComponent(" > "), (button) ->  this.Control(3)));
-        func_230480_a_(new Button(guiLeft + 32, guiTop + 16, 18, 18, new StringTextComponent(" < "), (button) -> this.Control(4)));
+    public void init() {
+        super.init();
+        buttons.clear();
+        addButton(new Button(guiLeft + 89, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
+        addButton(new Button(guiLeft + 56, guiTop + 42, 26, 18, new TranslationTextComponent("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
+        addButton(new Button(guiLeft + 128, guiTop + 16, 18, 18, new StringTextComponent(" > "), (button) ->  this.Control(3)));
+        addButton(new Button(guiLeft + 32, guiTop + 16, 18, 18, new StringTextComponent(" < "), (button) -> this.Control(4)));
     }
     
     private void Control(int opt) {
@@ -70,24 +70,24 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
     }
     
     @Override
-    public void func_230430_a_(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
-        this.func_230446_a_(p_230430_1_);
-        super.func_230430_a_(p_230430_1_, p_230430_2_, p_230430_3_, p_230430_4_);
-        this.func_230459_a_(p_230430_1_,p_230430_2_, p_230430_3_);
+    public void render(MatrixStack p_230430_1_, int p_230430_2_, int p_230430_3_, float p_230430_4_) {
+        this.renderBackground(p_230430_1_);
+        super.render(p_230430_1_, p_230430_2_, p_230430_3_, p_230430_4_);
+        this.renderHoveredTooltip(p_230430_1_,p_230430_2_, p_230430_3_);
     }
 
 	@Override
-	protected void func_230450_a_(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
+	protected void drawGuiContainerBackgroundLayer(MatrixStack p_230450_1_, float p_230450_2_, int p_230450_3_, int p_230450_4_) {
     	GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
-        this.field_230706_i_.getTextureManager().bindTexture(GUI);
-        this.func_238474_b_(p_230450_1_,this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
+        this.minecraft.getTextureManager().bindTexture(GUI);
+        this.blit(p_230450_1_,this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
 	}
 
 
 	@Override
-    protected void func_230451_b_(MatrixStack p_230450_1_, int mouseX, int mouseY) {
-    	this.field_230712_o_.func_238405_a_(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.walkman").getString(),
-    			this.xSize / 2 - this.field_230712_o_.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
+    protected void drawGuiContainerForegroundLayer(MatrixStack p_230450_1_, int mouseX, int mouseY) {
+    	this.font.drawString(p_230450_1_,new TranslationTextComponent("gui.audiocassettes.walkman").getString(),
+    			this.xSize / 2 - this.font.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
         String str = "-";
         if(this.container.getSlot(0).getHasStack())
         {
@@ -117,7 +117,7 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
 
         str = (" "+this.container.stitle+" ").substring(tstart < 0 ? 0 : tstart, tend < 0 ? 0 : tstart > tend ? tstart : tend);
         }
-        drawScaledString(p_230450_1_,field_230706_i_.fontRenderer,
+        drawScaledString(p_230450_1_,minecraft.fontRenderer,
         		(this.container.getSlot(0).getHasStack()? this.container.cursong+". "+str: "- "),
         		69, 22, 0.7F, 0xffffff);
     }
@@ -125,7 +125,7 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
     public void drawScaledString(MatrixStack p_230450_1_, FontRenderer fontRendererIn, String text, int x, int y, float size, int color) {
         GL11.glScalef(size,size,size);
         float mSize = (float)Math.pow(size,-1);
-        this.func_238476_c_(p_230450_1_, fontRendererIn,text,Math.round(x / size),Math.round(y / size),color);
+        drawString(p_230450_1_, fontRendererIn,text,Math.round(x / size),Math.round(y / size),color);
         GL11.glScalef(mSize,mSize,mSize);
     }
 }
