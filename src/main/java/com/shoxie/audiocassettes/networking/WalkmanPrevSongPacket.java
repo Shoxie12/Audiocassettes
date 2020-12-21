@@ -29,7 +29,7 @@ public class WalkmanPrevSongPacket implements IMessage {
         	ItemStack mp = WalkmanItem.getMPInHand(ctx.getServerHandler().player);
         	WalkmanItem.switchSong(false, WalkmanItem.getCassette(mp));
             if(WalkmanItem.isPlaying(mp)) {
-            	WalkmanItem.stopMusic(mp, ctx.getServerHandler().player.getServerWorld(),ctx.getServerHandler().player);
+            	WalkmanItem.stopMusic(WalkmanItem.getID(mp),ctx.getServerHandler().player,false);
             	WalkmanItem.setPlaying(mp, false);
             }
         }

@@ -11,12 +11,11 @@ import com.shoxie.audiocassettes.capability.WalkmanCapability;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.networking.SWalkmanPlayPacket;
 import com.shoxie.audiocassettes.networking.SWalkmanStopPacket;
-import com.shoxie.audiocassettes.networking.WalkmanOnDropPacket;
-
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -80,12 +79,6 @@ public class WalkmanItem extends Item{
     public boolean getShareTag() {
     	return true;
     }
-    
-    @Override
-    public boolean onDroppedByPlayer(ItemStack mp, EntityPlayer player) {
-    	Networking.INSTANCE.sendToServer(new WalkmanOnDropPacket(mp));
-    	return true;
-    }
 	
 	@Nullable
 	@Override
@@ -96,8 +89,13 @@ public class WalkmanItem extends Item{
 	@Override
 	@SideOnly(Side.CLIENT)
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-    	if(getCassette(stack).getItem() instanceof AbstractAudioCassetteItem)
-            tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks("Current Song: "+AbstractAudioCassetteItem.getCurrentSlot(getCassette(stack))+". "+AbstractAudioCassetteItem.getSongTitle(getCassette(stack))).getFormattedText());
+    	ItemStack cassette = getCassette(stack);
+
+		if(cassette.getItem() instanceof AbstractAudioCassetteItem)
+            tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks("Current Song: "
+            		+AbstractAudioCassetteItem.getCurrentSlot(cassette)+". "
+            		+AbstractAudioCassetteItem.getSongTitle(cassette)).getFormattedText()
+            );
     }
     
 	public static void setTagBool(ItemStack mp, String name, boolean val) {
@@ -164,11 +162,16 @@ public class WalkmanItem extends Item{
 		return mp.getItem() instanceof WalkmanItem ? mp : ItemStack.EMPTY;
 	}
 	
-	public static ItemStack getMPbyID(EntityPlayer player, String id) {
-		for(int i=0; i < 36; i++) 
-			if(player.inventory.getStackInSlot(i).getItem() instanceof WalkmanItem) 
-				if(WalkmanItem.getID(player.inventory.getStackInSlot(i)).equals(id)) 
-					return player.inventory.getStackInSlot(i);
+	public static ItemStack getMPbyID(EntityPlayer p, String id) {
+
+		if(p.inventory.getItemStack().getItem() instanceof WalkmanItem)
+			if(getID(p.inventory.getItemStack()).equals(id)) return p.inventory.getItemStack();
+
+		for(Slot s : p.inventoryContainer.inventorySlots)
+			if(s.getHasStack()) 
+				if(s.getStack().getItem() instanceof WalkmanItem) 
+					if(getID(s.getStack()).equals(id)) 
+						return s.getStack();
 			
 		return ItemStack.EMPTY;
 	}
@@ -177,19 +180,21 @@ public class WalkmanItem extends Item{
     	
     	List<EntityPlayerMP> players = sw.getMinecraftServer().getPlayerList().getPlayers();
     	WalkmanItem.setPlaying(mp, true);
-    	for(EntityPlayerMP player : players) {
-    		if(
-    				Math.abs(player.getPosition().getX() - sender.getPosition().getX()) < audiocassettes.WalkmanMaxSoundDistance &&
-    				Math.abs(player.getPosition().getY() - sender.getPosition().getY()) < audiocassettes.WalkmanMaxSoundDistance &&
-    				Math.abs(player.getPosition().getZ() - sender.getPosition().getZ()) < audiocassettes.WalkmanMaxSoundDistance
-    				)
-    		{
-				Networking.INSTANCE.sendTo(new SWalkmanPlayPacket(getID(mp),
-						sender.getUniqueID().toString(),player==sender ? true : false,getCassette(mp)), 
-						player
-				);
-    		}
-    	}
+    	ItemStack cassette = getCassette(mp);
+    	if(cassette.getItem() instanceof AbstractAudioCassetteItem)
+	    	for(EntityPlayerMP player : players) {
+	    		if(
+	    				Math.abs(player.getPosition().getX() - sender.getPosition().getX()) < audiocassettes.WalkmanMaxSoundDistance &&
+	    				Math.abs(player.getPosition().getY() - sender.getPosition().getY()) < audiocassettes.WalkmanMaxSoundDistance &&
+	    				Math.abs(player.getPosition().getZ() - sender.getPosition().getZ()) < audiocassettes.WalkmanMaxSoundDistance
+	    				)
+	    		{
+					Networking.INSTANCE.sendTo(new SWalkmanPlayPacket(getID(mp),
+							sender.getUniqueID().toString(),player==sender ? true : false,cassette), 
+							player
+					);
+	    		}
+	    	}
     }
     
 	public static String getID(ItemStack mp) {
@@ -207,14 +212,31 @@ public class WalkmanItem extends Item{
 		else return null;
 	}
 		
-	public static void stopMusic(ItemStack mp, WorldServer sw, EntityPlayerMP sender) {
-    	List<EntityPlayerMP> players = sw.getMinecraftServer().getPlayerList().getPlayers();
+	public static void stopMusic(String mpid, EntityPlayerMP sender, boolean isdropped) {
+		List<EntityPlayerMP> players = sender.getServerWorld().getMinecraftServer().getPlayerList().getPlayers();
     	for(EntityPlayerMP player : players) {
-			Networking.INSTANCE.sendTo(new SWalkmanStopPacket(getID(mp),player == sender ? true :false), player);
+			Networking.INSTANCE.sendTo(new SWalkmanStopPacket(mpid,player == sender ? isdropped ? false : true : false), player);
     	}
 	}
 	
 	public static ItemStack getCassette(ItemStack mp) {
-		return mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).getStackInSlot(0);
+		if(mp != null)
+			if(mp.getItem() instanceof WalkmanItem)
+				return mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null).getStackInSlot(0);
+		
+		return ItemStack.EMPTY;
+	}
+	
+	public static boolean isPlayerOwnMp(EntityPlayer p, String id) {
+		
+		if(p.inventory.getItemStack().getItem() instanceof WalkmanItem)
+			if(getID(p.inventory.getItemStack()).equals(id)) return true;
+
+		for(Slot s : p.inventoryContainer.inventorySlots)
+			if(s.getHasStack()) 
+				if(s.getStack().getItem() instanceof WalkmanItem) 
+					if(getID(s.getStack()).equals(id)) 
+						return true;
+		return false;
 	}
 }

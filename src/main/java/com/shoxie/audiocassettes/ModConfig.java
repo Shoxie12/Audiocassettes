@@ -20,9 +20,13 @@ public class ModConfig {
     }
 
     private static void loadConfig(Configuration cfg) {
-    	nowplayingannounce = cfg.getBoolean("NowPlayingAnnounce", "general", nowplayingannounce, "Announce the name of the song currently playing to everyone?");
-    	skipemptyslots = cfg.getBoolean("SkipEmptySlots", "general", skipemptyslots, "If enabled, Walkman and Boombox will ignore empty slots of audio cassettes");
-    	boomboxbmaxdist = cfg.getInt("BoomBoxMaxDistance", "general", boomboxbmaxdist, 16, 512, "Max distance for a BoomBox where you can hear music (works only with stereo music)");
-    	walkmanmaxdist = cfg.getInt("WalkmanMaxDistance", "general", walkmanmaxdist, 16, 512, "Max distance for a Walkman where you can hear music (works only with stereo music)");
+    	nowplayingannounce = cfg.getBoolean(
+    			"NowPlayingAnnounce", "general", nowplayingannounce, "Announce the name of the song currently playing to everyone?");
+    	skipemptyslots = cfg.getBoolean(
+    			"SkipEmptySlots", "general", skipemptyslots, "If enabled, Walkman and Boombox will ignore empty slots of audio cassettes");
+    	boomboxbmaxdist = cfg.getInt(
+    			"BoomBoxMaxDistance", "general", boomboxbmaxdist, 16, 512, "Max distance for a BoomBox where you can hear music (works only with stereo music)");
+    	walkmanmaxdist = cfg.getInt(
+    			"WalkmanMaxDistance", "general", walkmanmaxdist, 16, 512, "Max distance for a Walkman where you can hear music (works only with stereo music)");
     }
 }

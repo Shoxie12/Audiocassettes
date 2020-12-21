@@ -12,6 +12,7 @@ import com.shoxie.audiocassettes.item.WalkmanItem;
 import com.shoxie.audiocassettes.networking.BoomBoxNextSongPacket;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.networking.WalkmanNextSongPacket;
+import com.shoxie.audiocassettes.networking.WalkmanOnDropPacket;
 import com.shoxie.audiocassettes.tile.TileBoomBox;
 
 import net.minecraft.block.Block;
@@ -62,7 +63,9 @@ public class ClientProxy extends CommonProxy {
 	
 	@Override
     public void renderBlock(Block block) {
-        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(new ItemBlock(block), 0, new ModelResourceLocation(block.getRegistryName(), "inventory"));
+        Minecraft.getMinecraft().getRenderItem().getItemModelMesher().register(
+        		new ItemBlock(block), 0, new ModelResourceLocation(block.getRegistryName(), "inventory")
+        		);
 	}
 	
 	@Override
@@ -96,25 +99,26 @@ public class ClientProxy extends CommonProxy {
 	                	mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
 	                    if(mp.getItem() instanceof WalkmanItem) 
 	                    	isPlaying = WalkmanItem.isPlaying(mp);
-	                    
                 	}
-                    while(mc.getSoundHandler().isSoundPlaying(Walkmansounds.get(id))) {
+                	boolean presentMP = isowner && WalkmanItem.isPlayerOwnMp(getClientPlayer(),id);
+                    while(mc.getSoundHandler().isSoundPlaying(Walkmansounds.get(id)) && presentMP) {
                     	try {
     						Thread.sleep(1000);
+    						presentMP = WalkmanItem.isPlayerOwnMp(getClientPlayer(),id);
     					} catch (InterruptedException e) {
-    						System.out.println(e.getMessage());
+    						audiocassettes.logger.warn(e.getMessage());
     					}
                     }
-                    
                 	if(isowner) {
-	                    mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
-	                    if(mp.getItem() instanceof WalkmanItem) 
-		                    isPlaying = WalkmanItem.isPlaying(mp);
-	                    
-	                    
-	                    if(isPlaying && getClientWorld() != null) 
-	                    	Networking.INSTANCE.sendToServer(new WalkmanNextSongPacket(id));
-                    	
+                		if(presentMP) {
+		                    mp = WalkmanItem.getMPbyID(audiocassettes.proxy.getClientPlayer(), id);
+		                    if(mp.getItem() instanceof WalkmanItem) 
+			                    isPlaying = WalkmanItem.isPlaying(mp);
+		                    
+		                    if(isPlaying && getClientWorld() != null) 
+		                    	Networking.INSTANCE.sendToServer(new WalkmanNextSongPacket(id));
+	                	}
+                		else Networking.INSTANCE.sendToServer(new WalkmanOnDropPacket(id));
                 	}
                 }
             }.start();
@@ -155,11 +159,11 @@ public class ClientProxy extends CommonProxy {
                     	try {
     						Thread.sleep(1000);
     					} catch (InterruptedException e) {
-    						System.out.println(e.getMessage());
+    						audiocassettes.logger.warn(e.getMessage());
     					}
                     }
 
-                    if(tile.isPlaying && getClientWorld() != null && isowner) {
+                    if(!tile.isInvalid() && tile.isPlaying && getClientWorld() != null && isowner) {
                     	Networking.INSTANCE.sendToServer(new BoomBoxNextSongPacket(tile.getPos(), false));
                     }
                 }

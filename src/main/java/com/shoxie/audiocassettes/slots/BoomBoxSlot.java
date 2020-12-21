@@ -7,7 +7,6 @@ import com.shoxie.audiocassettes.container.BoomBoxContainer;
 import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
 import com.shoxie.audiocassettes.networking.CBoomBoxStopPacket;
 import com.shoxie.audiocassettes.networking.Networking;
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
@@ -27,24 +26,22 @@ public class BoomBoxSlot extends SlotItemHandler{
 	}
 	
 	@Override
-	public boolean canTakeStack(EntityPlayer playerIn) {
-		return !c.getTile().isPlaying;
-	}
-	
-	@Override
 	public void onSlotChanged() {   
-		
-		if(!this.getHasStack() && audiocassettes.proxy.isBoomBoxPlaying(c.getTile().getID())) {
-			Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(c.getPos()));
-		}
-		else if(this.getHasStack()){
-	    	ItemStack stack = this.getStack();
-	    	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
-	    		c.max = AbstractAudioCassetteItem.getMaxSlots(stack);
-	    		c.curr = AbstractAudioCassetteItem.getCurrentSlot(stack);
-	    		c.title = AbstractAudioCassetteItem.getSongTitle(stack);
-    		}
-    	}
+		if(c.getTile().getWorld().isRemote)
+			if(!this.getHasStack() && audiocassettes.proxy.isBoomBoxPlaying(c.getTile().getID())) {
+				
+					Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(c.getPos()));
+					this.inventory.markDirty();
+					return;
+			}
+			else if(this.getHasStack()){
+		    	ItemStack stack = this.getStack();
+		    	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
+		    		c.max = AbstractAudioCassetteItem.getMaxSlots(stack);
+		    		c.curr = AbstractAudioCassetteItem.getCurrentSlot(stack);
+		    		c.title = AbstractAudioCassetteItem.getSongTitle(stack);
+	    		}
+	    	}
 		
 	    this.inventory.markDirty();
 	}

@@ -28,7 +28,7 @@ public class CWalkmanStopPacket implements IMessage {
 
         private void handle(CWalkmanStopPacket message, MessageContext ctx) {
         	ItemStack mp = WalkmanItem.getMPInHand(ctx.getServerHandler().player);
-        	WalkmanItem.stopMusic(mp, ctx.getServerHandler().player.getServerWorld(),ctx.getServerHandler().player);
+        	WalkmanItem.stopMusic(WalkmanItem.getID(mp),ctx.getServerHandler().player,false);
         }
     }
 }

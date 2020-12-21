@@ -4,61 +4,46 @@ import com.shoxie.audiocassettes.tile.TileTapeDeck;
 
 import io.netty.buffer.ByteBuf;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.ByteBufUtils;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class TapeDeckStartWritingPacket implements IMessage {
+public class TapeDeckStopWritePacket implements IMessage {
 	
     private BlockPos pos;
-    private String song;
-    private String sname;
-    private boolean erase;
 
-    public TapeDeckStartWritingPacket() { }
+    public TapeDeckStopWritePacket() { }
     
-    public TapeDeckStartWritingPacket(BlockPos pos, ResourceLocation res, String sname, boolean erase) {
+    public TapeDeckStopWritePacket(BlockPos pos) {
         this.pos = pos;
-        String song = (res.getResourceDomain()+":"+res.getResourcePath());
-        this.song = song.length() > 127 ? "Untitled" : song;
-        this.sname = sname.length() > 127 ? "Untitled" : sname;
-        this.erase = erase;
     }
     
     @Override
     public void fromBytes(ByteBuf buf) {
     	pos = BlockPos.fromLong(buf.readLong());
-    	song = ByteBufUtils.readUTF8String(buf);
-    	sname = ByteBufUtils.readUTF8String(buf);
-    	erase = buf.readBoolean();
     }
 
     @Override
     public void toBytes(ByteBuf buf) {
         buf.writeLong(pos.toLong());
-        ByteBufUtils.writeUTF8String(buf, song);
-        ByteBufUtils.writeUTF8String(buf, sname);
-        buf.writeBoolean(erase);
     }
 
-    public static class Handler implements IMessageHandler<TapeDeckStartWritingPacket, IMessage> {
+    public static class Handler implements IMessageHandler<TapeDeckStopWritePacket, IMessage> {
         @Override
-        public IMessage onMessage(TapeDeckStartWritingPacket message, MessageContext ctx) {
+        public IMessage onMessage(TapeDeckStopWritePacket message, MessageContext ctx) {
             FMLCommonHandler.instance().getWorldThread(ctx.netHandler).addScheduledTask(() -> handle(message, ctx));
             return null;
         }
 
-        private void handle(TapeDeckStartWritingPacket message, MessageContext ctx) {
+        private void handle(TapeDeckStopWritePacket message, MessageContext ctx) {
             EntityPlayerMP playerEntity = ctx.getServerHandler().player;
             World world = playerEntity.getEntityWorld();
             if (world.isBlockLoaded(message.pos)) {
                 TileTapeDeck tile = (TileTapeDeck)world.getTileEntity(message.pos);
-                tile.StartWrite(message.song,message.sname,message.erase);
+                tile.StopWrite();
             }
         }
     }

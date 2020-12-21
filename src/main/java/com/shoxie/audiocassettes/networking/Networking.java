@@ -111,5 +111,11 @@ public class Networking {
         		WalkmanPrevSongPacket.class,
         		nextID(),
         		Side.SERVER);
+        
+        INSTANCE.registerMessage(
+        		TapeDeckStopWritePacket.Handler.class,
+        		TapeDeckStopWritePacket.class,
+        		nextID(),
+        		Side.SERVER);
     }
 }

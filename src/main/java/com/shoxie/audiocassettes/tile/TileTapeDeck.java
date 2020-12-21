@@ -25,6 +25,8 @@ public class TileTapeDeck extends TileEntity implements ITickable{
 	private int WriteTime=0;
 	String song;
 	String sname;
+	boolean erase=false;
+	
 
     private ItemStackHandler itemStackHandler = new ItemStackHandler(2) {
         @Override
@@ -33,6 +35,10 @@ public class TileTapeDeck extends TileEntity implements ITickable{
         }
     };
 
+    public ItemStackHandler getHandler() {
+    	return this.itemStackHandler;
+    }
+    
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
@@ -74,10 +80,13 @@ public class TileTapeDeck extends TileEntity implements ITickable{
 		return itemStackHandler.getStackInSlot(1);
 	}
 
-    public void StartWrite(String song, String sname) {
+    public void StartWrite(String song, String sname, boolean erase) {
     	if(
-    			itemStackHandler.getStackInSlot(0).getItem() instanceof ItemRecord && 
-    			itemStackHandler.getStackInSlot(1).getItem() instanceof AbstractAudioCassetteItem
+    			(
+    					itemStackHandler.getStackInSlot(0).getItem() instanceof ItemRecord ||
+    					erase
+    			)
+    			&& itemStackHandler.getStackInSlot(1).getItem() instanceof AbstractAudioCassetteItem
 	    )
     	{
     		AbstractAudioCassetteItem c = (AbstractAudioCassetteItem) itemStackHandler.getStackInSlot(1).getItem();
@@ -85,13 +94,15 @@ public class TileTapeDeck extends TileEntity implements ITickable{
 	    	Started = true;
 	    	this.song = song;
 	    	this.sname = sname;
+	    	this.erase = erase;
     	}
     }
     
-    private void FinaliseWrite(ItemStack cassette) {
-    	if(!(cassette.getItem() instanceof AbstractAudioCassetteItem))
-    		return;
-
+    private void FinaliseWrite(ItemStack cassette, boolean erase) {
+    	if(!erase)
+	    	if(!(cassette.getItem() instanceof AbstractAudioCassetteItem))
+	    		return;
+    	
     	AbstractAudioCassetteItem.appendSongs(cassette, song,sname);
 		Started=false;
 	}
@@ -137,7 +148,7 @@ public class TileTapeDeck extends TileEntity implements ITickable{
 		return WriteTime > 0;
 	}
 
-	public void cancelWrite() {
+	public void StopWrite() {
 		Started = false;
 		WriteTime = 0;
 		sendUpdates();
@@ -158,12 +169,12 @@ public class TileTapeDeck extends TileEntity implements ITickable{
 		    	ItemStack disc = itemStackHandler.getStackInSlot(0);
 		    	ItemStack cassette = itemStackHandler.getStackInSlot(1);
 		    	if(
-			    	!disc.isEmpty() && !cassette.isEmpty() &&
-			    	disc.getItem() instanceof ItemRecord && 
+			    	!cassette.isEmpty() &&
+			    	((!disc.isEmpty() && disc.getItem() instanceof ItemRecord) || erase) && 
 			    	cassette.getItem() instanceof AbstractAudioCassetteItem &&
 			    	Started
 		    	)
-		    	FinaliseWrite(cassette);
+		    	FinaliseWrite(cassette,erase);
 	    	}
     	}
 	}

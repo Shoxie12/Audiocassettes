@@ -37,6 +37,10 @@ public class TileBoomBox extends TileEntity {
         }
     };
 
+    public ItemStackHandler getHandler() {
+    	return this.itemStackHandler;
+    }
+    
     @Override
     public void readFromNBT(NBTTagCompound compound) {
         super.readFromNBT(compound);
@@ -153,7 +157,8 @@ public class TileBoomBox extends TileEntity {
     				)
     		{
     			boolean isowner = (player == sender);
-				Networking.INSTANCE.sendTo(new SBoomBoxPlayPacket(this.getPos(),this.getID(), isowner, this.getCassette()), player);
+				Networking.INSTANCE.sendTo(
+						new SBoomBoxPlayPacket(this.getPos(),this.getID(), isowner, this.getCassette()), player);
     		}
     	}
     }

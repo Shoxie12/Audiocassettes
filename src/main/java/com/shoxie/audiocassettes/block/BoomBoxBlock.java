@@ -2,30 +2,76 @@ package com.shoxie.audiocassettes.block;
 
 import com.shoxie.audiocassettes.audiocassettes;
 import com.shoxie.audiocassettes.tile.TileBoomBox;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.items.ItemStackHandler;
 
 public class BoomBoxBlock extends Block implements ITileEntityProvider {
 	public static String name = "boombox";
 	public static final int ID = 1;
-	
+	public static final PropertyDirection FACING = 
+			PropertyDirection.create("facing", EnumFacing.Plane.HORIZONTAL);
+
     public BoomBoxBlock () {
         super(Material.WOOD);
         this.setRegistryName(name);
         this.setUnlocalizedName(name);
         this.setCreativeTab(CreativeTabs.DECORATIONS);
         this.setHardness(2);
+
     }
+    
+	@Override
+	protected BlockStateContainer createBlockState() {
+	    return new BlockStateContainer(this, new IProperty[] { FACING });
+	}
+	
+    @Override
+    public void onBlockHarvested(World w, BlockPos pos, IBlockState state, EntityPlayer player) {
+		TileBoomBox tile = (TileBoomBox) w.getTileEntity(pos);
+		ItemStackHandler h = tile.getHandler();
+		if (!w.isRemote) {
+			tile.stopMusic();
+			for (int i = 0; i < h.getSlots(); i++) 
+				if (!h.getStackInSlot(i).isEmpty()) 
+					w.spawnEntity(new EntityItem(w, pos.getX(), pos.getY(), pos.getZ(), h.getStackInSlot(i)));
+		}
+	}
+	
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        EnumFacing enumfacing = EnumFacing.getFront(meta);
+        if (enumfacing.getAxis() == EnumFacing.Axis.Y)
+            enumfacing = EnumFacing.NORTH;
+
+        return this.getDefaultState().withProperty(FACING, enumfacing);
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state)
+    {
+        return ((EnumFacing)state.getValue(FACING)).getIndex();
+    }
+	
+	@Override
+	public IBlockState getStateForPlacement(World world, BlockPos pos, EnumFacing facing, float hitX, float hitY,
+	    float hitZ, int meta, EntityLivingBase placer, EnumHand hand) {
+	return super.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, meta, placer, hand).withProperty(FACING, placer.getHorizontalFacing());
+	}
     
     @Override
     public boolean hasTileEntity(IBlockState state) {
@@ -36,7 +82,6 @@ public class BoomBoxBlock extends Block implements ITileEntityProvider {
     public TileEntity createNewTileEntity(World worldIn, int meta) {
         return new TileBoomBox();
     }
-    
     
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {

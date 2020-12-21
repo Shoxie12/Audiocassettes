@@ -18,9 +18,11 @@ public class WalkmanContainer extends Container {
 	public String stitle = "-";
 	IItemHandler handler;
 	public ItemStack mp;
+	public EntityPlayer player;
 	
 	public WalkmanContainer(EntityPlayer player) {
-        this.mp = WalkmanItem.getMPInHand(player);
+        this.player = player;
+		this.mp = WalkmanItem.getMPInHand(player);
         handler = mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null);
         addSlotToContainer(new WalkmanSlot(handler, 0, 50, 17, this));
         layoutPlayerInventorySlots(8, 65, player.inventory);

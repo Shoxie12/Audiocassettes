@@ -8,6 +8,8 @@ import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.networking.TapeDeckSetSongPacket;
 import com.shoxie.audiocassettes.networking.TapeDeckStartWritingPacket;
+import com.shoxie.audiocassettes.networking.TapeDeckStopWritePacket;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiButton;
@@ -25,7 +27,7 @@ public class GuiTapeDeck extends GuiContainer {
 	protected int ySize = 168;
     private ResourceLocation GUI = new ResourceLocation(audiocassettes.MODID, "textures/gui/td.png");
 	private TapeDeckContainer container;
-    public GuiTapeDeck(TapeDeckContainer container) {
+	public GuiTapeDeck(TapeDeckContainer container) {
         super(container);
         this.container = container;
     }
@@ -34,9 +36,12 @@ public class GuiTapeDeck extends GuiContainer {
     public void initGui() {
         super.initGui();
         this.buttonList.clear();
-        this.buttonList.add(new GuiButton(9, guiLeft + 58, guiTop+60, 51, 20, new TextComponentTranslation("gui.audiocassettes.startripbtn").getFormattedText()));
+        this.buttonList.add(new GuiButton(9, guiLeft + 16, guiTop+55, 44, 20, 
+        		new TextComponentTranslation("gui.audiocassettes.startwrbtn").getFormattedText()));
         this.buttonList.add(new GuiButton(10, guiLeft + 54, guiTop + 33, 14, 14, " < "));
         this.buttonList.add(new GuiButton(11, guiLeft + 100, guiTop + 33, 14, 14, " > "));
+        this.buttonList.add(new GuiButton(12, guiLeft + 111, guiTop + 55, 47, 20, 
+        		new TextComponentTranslation("gui.audiocassettes.erasewrbtn").getFormattedText()));
         
     }
     
@@ -57,13 +62,14 @@ public class GuiTapeDeck extends GuiContainer {
         	if(stack.getItem() instanceof AbstractAudioCassetteItem && disc.getItem() instanceof ItemRecord) {
         		ItemRecord mdi = (ItemRecord) this.container.getSlot(0).getStack().getItem();
 	        	if(AbstractAudioCassetteItem.getMaxSlots(stack) > 0 && AbstractAudioCassetteItem.getCurrentSlot(stack)>0)
-	        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(), mdi.getSound().getSoundName(),mdi.getRecordNameLocal()));
+	        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(), 
+	        				mdi.getSound().getSoundName(),mdi.getRecordNameLocal(), false));
 	        	}
         	break;
         }
     	
     	case 10: {
-        	if(this.container.isWriting()) return;
+        	if(this.container.isWriting()) break;
         	ItemStack stack = this.container.getSlot(1).getStack();
         	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
         		int cursong = AbstractAudioCassetteItem.getCurrentSlot(stack);
@@ -75,7 +81,7 @@ public class GuiTapeDeck extends GuiContainer {
         }
     	
     	case 11: {
-        	if(this.container.isWriting()) return;
+        	if(this.container.isWriting()) break;
         	ItemStack stack = this.container.getSlot(1).getStack();
         	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
         		int cursong = AbstractAudioCassetteItem.getCurrentSlot(stack);
@@ -83,6 +89,21 @@ public class GuiTapeDeck extends GuiContainer {
 	        	if(maxsongs> 0 && cursong>0 && cursong<maxsongs)
 	        		Networking.INSTANCE.sendToServer(new TapeDeckSetSongPacket(this.container.getPos(),++cursong));
         	}
+        	break;
+        	}
+    	
+    	case 12: {
+        	if(this.container.isWriting()) {
+        		Networking.INSTANCE.sendToServer(new TapeDeckStopWritePacket(this.container.getPos()));
+        		break;
+        	}
+        	ItemStack stack = this.container.getSlot(1).getStack();
+        	if(stack.getItem() instanceof AbstractAudioCassetteItem) {
+	        	if(AbstractAudioCassetteItem.getMaxSlots(stack) > 0 && AbstractAudioCassetteItem.getCurrentSlot(stack)>0)
+	        		Networking.INSTANCE.sendToServer(new TapeDeckStartWritingPacket(this.container.getPos(),
+	        				new ResourceLocation("audiocassettes"+":"+"empty"),"--Empty--", true)
+	        				);
+	        	}
         	break;
         	}
         }
@@ -93,7 +114,11 @@ public class GuiTapeDeck extends GuiContainer {
     	ItemStack stack = this.container.getSlot(1).getStack();
     	int max = stack.getItem() instanceof AbstractAudioCassetteItem ? AbstractAudioCassetteItem.getMaxSlots(stack) : 0;
     	drawString(Minecraft.getMinecraft().fontRenderer, I18n.format("gui.audiocassettes.tapedeck"), 10, 10, 0xffffff);
-    	drawScaledString(Minecraft.getMinecraft().fontRenderer, I18n.format("gui.audiocassettes.selectedtrack")+": "+(max>0? AbstractAudioCassetteItem.getCurrentSlot(stack) : "-"), 101, 13, 0.7F, 0xffffff);
+    	drawScaledString(Minecraft.getMinecraft().fontRenderer, 
+    			(
+    					I18n.format("gui.audiocassettes.selectedtrack")+
+    					": "+(max>0? AbstractAudioCassetteItem.getCurrentSlot(stack) : "-")
+    			), 101, 13, 0.7F, 0xffffff);
     }
 
     @Override

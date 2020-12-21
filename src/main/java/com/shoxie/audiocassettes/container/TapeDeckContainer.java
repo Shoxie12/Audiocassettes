@@ -59,7 +59,7 @@ public class TapeDeckContainer extends Container {
 	
 	@Override
 	public ItemStack transferStackInSlot(EntityPlayer playerIn, int index) {
-		tileEntity.cancelWrite();
+		tileEntity.StopWrite();
 	    ItemStack itemstack = ItemStack.EMPTY;
 	    Slot slot = this.inventorySlots.get(index);
 	    if (slot != null && slot.getHasStack()) {
@@ -110,6 +110,10 @@ public class TapeDeckContainer extends Container {
 
 	public BlockPos getPos() {
 		return tileEntity.getPos();
+	}
+	
+	public TileTapeDeck getTile() {
+		return this.tileEntity;
 	}
 
 }

@@ -12,6 +12,8 @@ gui.audiocassettes.boombox=BoomBox
 gui.audiocassettes.walkman=Walkman
 gui.audiocassettes.startplaybtn=Play
 gui.audiocassettes.stopplaybtn=Stop
-gui.audiocassettes.startripbtn=Write
+gui.audiocassettes.startwrbtn=Write
+gui.audiocassettes.stopwrbtn=Stop
+gui.audiocassettes.erasewrbtn=Erase
 gui.audiocassettes.selectedtrack=Selected Track: 
 

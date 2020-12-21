@@ -6,7 +6,7 @@
     "up": "audiocassettes:blocks/td_top",
     "east": "audiocassettes:blocks/td_side",
     "west": "audiocassettes:blocks/td_side",
-    "north": "audiocassettes:blocks/td_face",
+    "north": "#front",
     "south": "audiocassettes:blocks/td_side"
   }
 }

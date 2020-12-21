@@ -47,8 +47,10 @@ public class GuiBoomBox extends GuiContainer {
         super.initGui();
         this.updateScreen();
         this.buttonList.clear();
-        this.buttonList.add(new GuiButton(11, guiLeft + 89, guiTop + 42, 26, 18, new TextComponentTranslation("gui.audiocassettes.stopplaybtn").getFormattedText()));
-        this.buttonList.add(new GuiButton(12, guiLeft + 56, guiTop + 42, 26, 18, new TextComponentTranslation("gui.audiocassettes.startplaybtn").getFormattedText()));
+        this.buttonList.add(new GuiButton(11, guiLeft + 89, guiTop + 42, 26, 18, 
+        		new TextComponentTranslation("gui.audiocassettes.stopplaybtn").getFormattedText()));
+        this.buttonList.add(new GuiButton(12, guiLeft + 56, guiTop + 42, 26, 18, 
+        		new TextComponentTranslation("gui.audiocassettes.startplaybtn").getFormattedText()));
         this.buttonList.add(new GuiButton(13, guiLeft + 128, guiTop + 16, 18, 18, new TextComponentTranslation(" > ").getFormattedText()));
         this.buttonList.add(new GuiButton(14, guiLeft + 32, guiTop + 16, 18, 18, new TextComponentTranslation(" < ").getFormattedText()));
 
@@ -110,7 +112,8 @@ public class GuiBoomBox extends GuiContainer {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        this.fontRenderer.drawString(I18n.format("gui.audiocassettes.boombox"), this.xSize / 2 - this.fontRenderer.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2, 6, 0xffffff);
+        this.fontRenderer.drawString(I18n.format("gui.audiocassettes.boombox"),
+        		this.xSize / 2 - this.fontRenderer.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2, 6, 0xffffff);
         int strlen = this.container.title.length()+2;
 
         if(strlen > 12) {

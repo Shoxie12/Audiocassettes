@@ -41,9 +41,9 @@ public class WalkmanNextSongPacket implements IMessage {
 	    	ItemStack mp = ItemStack.EMPTY;
 	    	EntityPlayerMP playerMP = ctx.getServerHandler().player;
 	    	if(message.id.equals("-")) {
-	    		mp = WalkmanItem.getMPInHand(playerMP = ctx.getServerHandler().player); 
+	    		mp = WalkmanItem.getMPInHand(playerMP); 
 	    		if(WalkmanItem.isPlaying(mp)) {
-		            WalkmanItem.stopMusic(mp, playerMP.getServerWorld(),playerMP);
+		            WalkmanItem.stopMusic(WalkmanItem.getID(mp),playerMP,false);
 		    		WalkmanItem.setPlaying(mp, false);
 	    		}
 	    	}

@@ -19,8 +19,8 @@ import com.shoxie.audiocassettes.proxy.CommonProxy;
 public class audiocassettes
 {
     public static final String MODID = "audiocassettes";
-    public static final String NAME = "Audio Cassettes";
-    public static final String VERSION = "1.0";
+    public static final String NAME = "AudioCassettes";
+    public static final String VERSION = "1.1";
     public static Logger logger = LogManager.getLogger(MODID);
     public static Configuration config;
     

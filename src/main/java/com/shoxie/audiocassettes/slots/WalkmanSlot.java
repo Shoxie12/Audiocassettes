@@ -9,16 +9,15 @@ import com.shoxie.audiocassettes.item.WalkmanItem;
 import com.shoxie.audiocassettes.networking.CWalkmanStopPacket;
 import com.shoxie.audiocassettes.networking.Networking;
 
-import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class WalkmanSlot extends SlotItemHandler{
-	private WalkmanContainer container;
+	private WalkmanContainer c;
 	public WalkmanSlot(IItemHandler handler, int index, int xPosition, int yPosition, WalkmanContainer container) {
 		super(handler, index, xPosition, yPosition);
-		this.container = container;
+		this.c = container;
 	}
 
 	@Override
@@ -29,21 +28,20 @@ public class WalkmanSlot extends SlotItemHandler{
 	}
 	
 	@Override
-	public boolean canTakeStack(EntityPlayer playerIn) {
-		return !audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(audiocassettes.proxy.getClientPlayer())));
-	}
-	
-	@Override
-	public void onSlotChanged() {        
-		if(!this.getHasStack() && audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(audiocassettes.proxy.getClientPlayer())))) {
-			Networking.INSTANCE.sendToServer(new CWalkmanStopPacket());
-			return;
-		}
-		else {
-	        this.container.stitle = AbstractAudioCassetteItem.getSongTitle(this.getStack());
-	        this.container.cursong = AbstractAudioCassetteItem.getCurrentSlot(this.getStack());
-	        this.container.maxsongs = AbstractAudioCassetteItem.getMaxSlots(this.getStack());
-		}
+	public void onSlotChanged() {
+		if(c.player.getEntityWorld().isRemote)
+			if(!this.getHasStack() && audiocassettes.proxy.isWalkmanPlaying(
+				WalkmanItem.getID(WalkmanItem.getMPInHand(audiocassettes.proxy.getClientPlayer()))))
+			{
+				Networking.INSTANCE.sendToServer(new CWalkmanStopPacket());
+				this.inventory.markDirty();
+				return;
+			}
+			else {
+		        this.c.stitle = AbstractAudioCassetteItem.getSongTitle(this.getStack());
+		        this.c.cursong = AbstractAudioCassetteItem.getCurrentSlot(this.getStack());
+		        this.c.maxsongs = AbstractAudioCassetteItem.getMaxSlots(this.getStack());
+			}
 	    this.inventory.markDirty();
 	}
 }

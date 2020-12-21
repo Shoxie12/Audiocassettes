@@ -45,8 +45,10 @@ public class GuiWalkman extends GuiContainer {
         super.initGui();
         
         this.buttonList.clear();
-        this.buttonList.add(new GuiButton(11, guiLeft + 89, guiTop + 42, 26, 18, new TextComponentTranslation("gui.audiocassettes.stopplaybtn").getFormattedText()));
-        this.buttonList.add(new GuiButton(12, guiLeft + 56, guiTop + 42, 26, 18, new TextComponentTranslation("gui.audiocassettes.startplaybtn").getFormattedText()));
+        this.buttonList.add(new GuiButton(11, guiLeft + 89, guiTop + 42, 26, 18, 
+        		new TextComponentTranslation("gui.audiocassettes.stopplaybtn").getFormattedText()));
+        this.buttonList.add(new GuiButton(12, guiLeft + 56, guiTop + 42, 26, 18, 
+        		new TextComponentTranslation("gui.audiocassettes.startplaybtn").getFormattedText()));
         this.buttonList.add(new GuiButton(13, guiLeft + 128, guiTop + 16, 18, 18, new TextComponentTranslation(" > ").getFormattedText()));
         this.buttonList.add(new GuiButton(14, guiLeft + 32, guiTop + 16, 18, 18, new TextComponentTranslation(" < ").getFormattedText()));
 
@@ -110,7 +112,8 @@ public class GuiWalkman extends GuiContainer {
     }
 
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        this.fontRenderer.drawString(I18n.format("gui.audiocassettes.walkman"), this.xSize / 2 - this.fontRenderer.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
+        this.fontRenderer.drawString(I18n.format("gui.audiocassettes.walkman"),
+        		this.xSize / 2 - this.fontRenderer.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
         String str = "-";
         if(this.container.getSlot(0).getHasStack())
         {
@@ -140,7 +143,8 @@ public class GuiWalkman extends GuiContainer {
 
         str = (" "+this.container.stitle+" ").substring(tstart < 0 ? 0 : tstart, tend < 0 ? 0 : tstart > tend ? tstart : tend);
         }
-        drawScaledString(Minecraft.getMinecraft().fontRenderer, (this.container.getSlot(0).getHasStack()? this.container.cursong+". "+str: "- "), 69, 22, 0.7F, 0xffffff);
+        drawScaledString(Minecraft.getMinecraft().fontRenderer,
+        		(this.container.getSlot(0).getHasStack()? this.container.cursong+". "+str: "- "), 69, 22, 0.7F, 0xffffff);
     }
     
     public void drawScaledString(FontRenderer fontRendererIn, String text, int x, int y, float size, int color) {
