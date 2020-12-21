@@ -3,30 +3,28 @@ package com.shoxie.audiocassettes.networking;
 import java.util.function.Supplier;
 
 import com.shoxie.audiocassettes.item.WalkmanItem;
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 public class WalkmanOnDropPacket{
 	
-	private final ItemStack mp;
+	private final String id;
 	
     public WalkmanOnDropPacket(PacketBuffer buf) {
-    	mp = buf.readItemStack();
+    	id = buf.readString(10);
     }
 	
-	public WalkmanOnDropPacket(ItemStack mp) {
-		this.mp = mp;
+	public WalkmanOnDropPacket(String id) {
+		this.id = id.length() > 10 ? "-" : id;
     }
 	
     public void toBytes(PacketBuffer buf) {
-    	buf.writeItemStack(mp);
+    	buf.writeString(id, 10);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-        	if(mp.getItem() instanceof WalkmanItem)
-        		WalkmanItem.stopMusic(mp, ctx.get().getSender().getServerWorld(),null);
+        	WalkmanItem.stopMusic(id,ctx.get().getSender(),true);
         });
         ctx.get().setPacketHandled(true);
     }

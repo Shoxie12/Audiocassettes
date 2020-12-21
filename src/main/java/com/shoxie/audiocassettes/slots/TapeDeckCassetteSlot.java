@@ -38,7 +38,7 @@ public class TapeDeckCassetteSlot extends SlotItemHandler{
 					stack.setTag(nbt);
 				}
 		
-		tile.cancelWrite();
+		tile.stopWrite();
 	    this.inventory.markDirty();
 	}
 }

@@ -36,7 +36,7 @@ public class TapeDeckTile extends TileEntity implements ITickableTileEntity, INa
 	private LazyOptional<IItemHandler> handler = LazyOptional.of(this::createHandler);
 	ResourceLocation res;
 	String sname;
-	
+	private boolean erase = false;
 	
     public TapeDeckTile() {
 		super(ModTileEntities.TILE_TAPE_DECK);
@@ -48,10 +48,13 @@ public class TapeDeckTile extends TileEntity implements ITickableTileEntity, INa
         return new TapeDeckContainer(i, this, playerInventory);
     }
 	
-    public void StartWrite(ResourceLocation res, String sname) {
+    public void StartWrite(ResourceLocation res, String sname, boolean erase) {
     	if(
-    			this.getItemInSlot(0).getItem() instanceof MusicDiscItem && 
-    			this.getItemInSlot(1).getItem() instanceof AbstractAudioCassetteItem
+    			(
+    					this.getItemInSlot(0).getItem() instanceof MusicDiscItem ||
+    					erase
+    			)
+    			&& this.getItemInSlot(1).getItem() instanceof AbstractAudioCassetteItem
 	    )
     	{
     		AbstractAudioCassetteItem c = (AbstractAudioCassetteItem) this.getItemInSlot(1).getItem();
@@ -59,6 +62,7 @@ public class TapeDeckTile extends TileEntity implements ITickableTileEntity, INa
 	    	Started = true;
 	    	this.res = res;
 	    	this.sname = sname;
+	    	this.erase = erase;
     	}
     }
     
@@ -98,19 +102,20 @@ public class TapeDeckTile extends TileEntity implements ITickableTileEntity, INa
 		    	ItemStack disc = this.getItemInSlot(0);
 		    	ItemStack cassette = this.getItemInSlot(1);
 		    	if(
-			    	!disc.isEmpty() && !cassette.isEmpty() &&
-			    	disc.getItem() instanceof MusicDiscItem && 
-			    	cassette.getItem() instanceof AbstractAudioCassetteItem &&
-			    	Started
-		    	)
-		    	FinaliseWrite(cassette);
+				    !cassette.isEmpty() &&
+				    ((!disc.isEmpty() && disc.getItem() instanceof MusicDiscItem) || erase) && 
+				    cassette.getItem() instanceof AbstractAudioCassetteItem &&
+				    Started
+			    )
+		    	FinaliseWrite(cassette, erase);
 	    	}
     	}
     }
     
-    private void FinaliseWrite(ItemStack cassette) {
-    	if(!(cassette.getItem() instanceof AbstractAudioCassetteItem))
-    		return;
+    private void FinaliseWrite(ItemStack cassette, boolean erase) {
+    	if(!erase)
+	    	if(!(cassette.getItem() instanceof AbstractAudioCassetteItem))
+	    		return;
 
     	AbstractAudioCassetteItem.appendSongs(cassette, res,sname);
 		Started=false;
@@ -176,7 +181,7 @@ public class TapeDeckTile extends TileEntity implements ITickableTileEntity, INa
 		return WriteTime > 0;
 	}
 
-	public void cancelWrite() {
+	public void stopWrite() {
 		Started = false;
 		WriteTime = 0;
 		sendUpdates();

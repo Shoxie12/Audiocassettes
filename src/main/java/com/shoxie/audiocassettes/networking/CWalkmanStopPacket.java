@@ -21,7 +21,7 @@ public class CWalkmanStopPacket{
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
         	ItemStack mp = WalkmanItem.getMPInHand(ctx.get().getSender());
-        	WalkmanItem.stopMusic(mp, ctx.get().getSender().getServerWorld(),ctx.get().getSender());
+        	WalkmanItem.stopMusic(WalkmanItem.getID(mp), ctx.get().getSender(),false);
         });
         ctx.get().setPacketHandled(true);
     }

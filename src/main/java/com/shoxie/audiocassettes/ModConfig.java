@@ -16,6 +16,7 @@ public class ModConfig {
 	private static ForgeConfigSpec.ConfigValue<Integer> walkmanmaxdist;
 	private static ForgeConfigSpec.ConfigValue<Integer> boomboxbmaxdist;
 	private static ForgeConfigSpec.ConfigValue<Boolean> nowplayingannounce;
+	private static ForgeConfigSpec.ConfigValue<Boolean> skipemptyslots;
     public static ForgeConfigSpec cfg;
 
 
@@ -26,6 +27,10 @@ public class ModConfig {
 		nowplayingannounce = builder.comment(
 				"",
 				"Announce the name of the song currently playing to everyone?").define("NowPlayingAnnounce", true);
+		
+		skipemptyslots = builder.comment(
+				"",
+				"If enabled, Walkman and Boombox will ignore empty slots of audio cassettes").define("SkipEmptySlots", true);
 		
 		boomboxbmaxdist = builder.comment(
 				"",
@@ -70,6 +75,10 @@ public class ModConfig {
 	
 	public static int getWalkmanMaxDist() {
 		return walkmanmaxdist.get();
+	}
+	
+	public static boolean SkipEmptySlots() {
+		return skipemptyslots.get();
 	}
     
 }

@@ -27,7 +27,8 @@ public class CWalkmanPlayPacket{
         	ItemStack mp = ItemStack.EMPTY;
         	if(id.equals("-")) mp = WalkmanItem.getMPInHand(ctx.get().getSender());
         	else mp = WalkmanItem.getMPbyID(ctx.get().getSender(), id);
-        	if(mp != ItemStack.EMPTY) WalkmanItem.playMusic(mp, ctx.get().getSender().getServerWorld(), ctx.get().getSender());
+        	if(mp != ItemStack.EMPTY) WalkmanItem.playMusic(mp,
+        			ctx.get().getSender().getServerWorld(), ctx.get().getSender());
         });
         ctx.get().setPacketHandled(true);
     }

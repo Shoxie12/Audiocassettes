@@ -20,11 +20,15 @@ public class WalkmanContainer extends Container {
     public int cursong = 1;
 	public int maxsongs = 0;
 	public String stitle = "-";
+	public PlayerEntity player;
+	public ItemStack mp;
 	
     public WalkmanContainer(int windowId, PlayerInventory playerInventory, PlayerEntity playerentity) {
         super(ModContainers.CONTAINER_WALKMAN, windowId);
         this.playerInventory = new InvWrapper(playerInventory);
         ItemStack mp = WalkmanItem.getMPInHand(playerentity);
+        this.player = playerentity;
+        this.mp = mp;
         mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
 			this.addSlot(new WalkmanSlot(h, 0, 50, 17,mp, this));
 		});
@@ -34,7 +38,13 @@ public class WalkmanContainer extends Container {
     
     private int addSlotRange(IItemHandler handler, int index, int x, int y, int amount, int dx) {
         for (int i = 0 ; i < amount ; i++) {
-            addSlot(new SlotItemHandler(handler, index, x, y));
+        	addSlot(new SlotItemHandler(handler, index, x, y) {
+        		@Override
+        	    public boolean canTakeStack(PlayerEntity playerIn)
+        	    {
+        	        return !(WalkmanItem.getID(this.getStack()) == WalkmanItem.getID(mp));
+        	    }
+        	});
             x += dx;
             index++;
         }

@@ -125,7 +125,7 @@ public abstract class AbstractAudioCassetteItem extends Item{
 		}
 		else return "--Empty--";
 	}
-
+	
 	public static void setActiveSlot(int song, ItemStack stack) {
 		if(stack == null) return;
 		if(!(stack.getItem() instanceof AbstractAudioCassetteItem)) return;
@@ -150,5 +150,30 @@ public abstract class AbstractAudioCassetteItem extends Item{
 			    	stack.setTag(nbt);
 		    	}
 		  }
+	}
+	
+	public static int getNonEmptySlot(ItemStack c, boolean direction) {
+		int cur=getCurrentSlot(c);
+		int max=getMaxSlots(c);
+		if(direction) {
+			cur = cur < max ? cur+1 : cur;
+			for(int i = cur;i<=max;i++) {
+				if(!isSlotEmpty(i, c)) return i;
+			}
+		}
+		else {
+			cur = cur > 1 ? cur-1 : cur;
+			for(int i = cur;i>=1;i--) {
+				if(!isSlotEmpty(i, c)) return i;
+			}
+		}
+		return -1;
+	}
+	
+	public static boolean isSlotEmpty(int i, ItemStack c) {
+		if(c == null || c == ItemStack.EMPTY || !c.hasTag()) return true;
+		CompoundNBT nbt = new CompoundNBT();
+		nbt = c.getTag();
+		return nbt.getString("Song"+i).equals("audiocassettes:empty");
 	}
 }

@@ -2,10 +2,8 @@ package com.shoxie.audiocassettes.networking;
 
 import java.util.function.Supplier;
 
-import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
 import com.shoxie.audiocassettes.tile.BoomBoxTile;
 
-import net.minecraft.item.ItemStack;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.server.ServerWorld;
@@ -31,13 +29,8 @@ public class BoomBoxPrevSongPacket{
         ctx.get().enqueueWork(() -> {
         	ServerWorld sw = ctx.get().getSender().getServerWorld();
         	BoomBoxTile tile = (BoomBoxTile)sw.getTileEntity(pos);
-            ItemStack cassette = tile.getCassette();
-            int song = AbstractAudioCassetteItem.getCurrentSlot(cassette);
-            if(tile.isPlaying) {tile.stopMusic(sw); tile.isPlaying = false;}
-            if(song > 1)
-            	tile.setSong(song-1);
-            else if(song < 1)
-            	tile.setSong(1);
+            if(tile.isPlaying) {tile.stopMusic(); tile.isPlaying = false;}
+            tile.switchSong(false);
         });
         ctx.get().setPacketHandled(true);
     }

@@ -14,6 +14,7 @@
   "gui.audiocassettes.startplaybtn": "Play",
   "gui.audiocassettes.stopplaybtn": "Stop",
   "gui.audiocassettes.startripbtn": "Write",
+  "gui.audiocassettes.erasewrbtn": "Erase",
   "gui.audiocassettes.selectedtrack": "Selected Track"
   
 }

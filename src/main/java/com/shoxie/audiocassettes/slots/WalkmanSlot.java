@@ -14,10 +14,10 @@ import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class WalkmanSlot extends SlotItemHandler{
-	private WalkmanContainer container;
+	private WalkmanContainer c;
 	public WalkmanSlot(IItemHandler handler, int index, int xPosition, int yPosition, ItemStack mp , WalkmanContainer container) {
 		super(handler, index, xPosition, yPosition);
-		this.container = container;
+		this.c = container;
 	}
 
 	@Override
@@ -28,14 +28,17 @@ public class WalkmanSlot extends SlotItemHandler{
 	}
 	
 	@Override
-	public void onSlotChanged() {        
-		if(!this.getHasStack() && audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(audiocassettes.proxy.getClientPlayer())))) 
-			Networking.INSTANCE.sendToServer(new CWalkmanStopPacket());
-		else {
-	        this.container.stitle = AbstractAudioCassetteItem.getSongTitle(this.getStack());
-	        this.container.cursong = AbstractAudioCassetteItem.getCurrentSlot(this.getStack());
-	        this.container.maxsongs = AbstractAudioCassetteItem.getMaxSlots(this.getStack());
-		}
-	    this.inventory.markDirty();
+	public void onSlotChanged() {
+		if(c.player.world.isRemote())
+			if(!this.getHasStack() && audiocassettes.proxy.isWalkmanPlaying(
+					WalkmanItem.getID(WalkmanItem.getMPInHand(audiocassettes.proxy.getClientPlayer()))
+					)) 
+				Networking.INSTANCE.sendToServer(new CWalkmanStopPacket());
+			else {
+		        this.c.stitle = AbstractAudioCassetteItem.getSongTitle(this.getStack());
+		        this.c.cursong = AbstractAudioCassetteItem.getCurrentSlot(this.getStack());
+		        this.c.maxsongs = AbstractAudioCassetteItem.getMaxSlots(this.getStack());
+			}
+		    this.inventory.markDirty();
 	}
 }

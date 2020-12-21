@@ -13,7 +13,6 @@ import com.shoxie.audiocassettes.networking.BoomBoxNextSongPacket;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.tile.BoomBoxTile;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -34,7 +33,7 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
 	
     public BoomBoxScreen(BoomBoxContainer container, PlayerInventory inv, ITextComponent name) {
         super(container, inv, name);
-        this.tile = (BoomBoxTile) audiocassettes.proxy.getClientPlayer().world.getTileEntity(container.getPos());
+        this.tile = (BoomBoxTile) audiocassettes.proxy.getClientWorld().getTileEntity(container.getPos());
     }
 	
     @Override
@@ -42,18 +41,26 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
         super.init();
         
         buttons.clear();
-        addButton(new Button(guiLeft + 89, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
-        addButton(new Button(guiLeft + 56, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
-        addButton(new Button(guiLeft + 128, guiTop + 16, 18, 18, new TranslationTextComponent(" > ").getFormattedText(), (button) ->  this.Control(3)));
-        addButton(new Button(guiLeft + 32, guiTop + 16, 18, 18, new TranslationTextComponent(" < ").getFormattedText(), (button) -> this.Control(4)));
+        addButton(new Button(
+        		guiLeft + 89, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
+        addButton(new Button(
+        		guiLeft + 56, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
+        addButton(new Button(
+        		guiLeft + 128, guiTop + 16, 18, 18, new TranslationTextComponent(" > ").getFormattedText(), (button) ->  this.Control(3)));
+        addButton(new Button(
+        		guiLeft + 32, guiTop + 16, 18, 18, new TranslationTextComponent(" < ").getFormattedText(), (button) -> this.Control(4)));
     }
     private void Control(int opt) {
     	if(this.container.getSlot(0).getStack().getItem() instanceof AbstractAudioCassetteItem) 
     	{
-    		if(opt==1 && !(audiocassettes.proxy.isBoomBoxPlaying(tile.getID()))) Networking.INSTANCE.sendToServer(new CBoomBoxPlayPacket(this.container.getPos()));
-    		if(opt==2 && audiocassettes.proxy.isBoomBoxPlaying(tile.getID())) Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(this.container.getPos()));
-    		if(opt==3) Networking.INSTANCE.sendToServer(new BoomBoxNextSongPacket(this.container.getPos(),true));
-    		if(opt==4) Networking.INSTANCE.sendToServer(new BoomBoxPrevSongPacket(this.container.getPos()));
+    		if(opt==1 && !(audiocassettes.proxy.isBoomBoxPlaying(tile.getID()))) 
+    			Networking.INSTANCE.sendToServer(new CBoomBoxPlayPacket(this.container.getPos()));
+    		if(opt==2 && audiocassettes.proxy.isBoomBoxPlaying(tile.getID())) 
+    			Networking.INSTANCE.sendToServer(new CBoomBoxStopPacket(this.container.getPos()));
+    		if(opt==3) 
+    			Networking.INSTANCE.sendToServer(new BoomBoxNextSongPacket(this.container.getPos(),true));
+    		if(opt==4) 
+    			Networking.INSTANCE.sendToServer(new BoomBoxPrevSongPacket(this.container.getPos()));
     	} 	
     }
 
@@ -73,7 +80,10 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
 
     @Override
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        this.font.drawString(I18n.format("gui.audiocassettes.boombox"), this.xSize / 2 - this.font.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2, 6, 0xffffff);
+        this.font.drawString(I18n.format(
+        		"gui.audiocassettes.boombox"),
+        		this.xSize / 2 - this.font.getStringWidth(I18n.format("gui.audiocassettes.boombox")) / 2,
+        		6, 0xffffff);
         int strlen = this.container.title.length()+2;
 
         if(strlen > 12) {
@@ -98,7 +108,9 @@ public class BoomBoxScreen extends ContainerScreen<BoomBoxContainer> {
         }
 
         String str = (" "+this.container.title+" ").substring(tstart < 0 ? 0 : tstart, tend < 0 ? 0 : tstart > tend ? tstart : tend);
-        drawScaledString(Minecraft.getInstance().fontRenderer, (this.container.max>0&&this.container.getSlot(0).getHasStack()? this.container.curr+". "+str: "- "), 69, 22, 0.7F, 0xffffff);
+        drawScaledString(minecraft.fontRenderer,
+        		(this.container.max > 0 && this.container.getSlot(0).getHasStack() ? this.container.curr+". "+str: "- "),
+        		69, 22, 0.7F, 0xffffff);
     }
     
     public void drawScaledString(FontRenderer fontRendererIn, String text, int x, int y, float size, int color) {

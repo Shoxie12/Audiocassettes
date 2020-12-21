@@ -14,5 +14,6 @@
   "gui.audiocassettes.startplaybtn": "Плей",
   "gui.audiocassettes.stopplaybtn": "Стоп",
   "gui.audiocassettes.startripbtn": "Запись",
+  "gui.audiocassettes.erasewrbtn": "Стереть",
   "gui.audiocassettes.selectedtrack": "Выбранный трек: "
 }

@@ -12,7 +12,6 @@ import com.shoxie.audiocassettes.networking.CWalkmanPlayPacket;
 import com.shoxie.audiocassettes.networking.WalkmanPrevSongPacket;
 import com.shoxie.audiocassettes.networking.CWalkmanStopPacket;
 import com.shoxie.audiocassettes.networking.Networking;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.screen.inventory.ContainerScreen;
 import net.minecraft.client.gui.widget.button.Button;
@@ -44,10 +43,14 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
         super.init();
         
         buttons.clear();
-        addButton(new Button(guiLeft + 89, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
-        addButton(new Button(guiLeft + 56, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
-        addButton(new Button(guiLeft + 128, guiTop + 16, 18, 18, new TranslationTextComponent(" > ").getFormattedText(), (button) ->  this.Control(3)));
-        addButton(new Button(guiLeft + 32, guiTop + 16, 18, 18, new TranslationTextComponent(" < ").getFormattedText(), (button) -> this.Control(4)));
+        addButton(new Button(
+        		guiLeft + 89, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.stopplaybtn"), (button) -> this.Control(2)));
+        addButton(new Button(
+        		guiLeft + 56, guiTop + 42, 26, 18, I18n.format("gui.audiocassettes.startplaybtn"), (button) -> this.Control(1)));
+        addButton(new Button(
+        		guiLeft + 128, guiTop + 16, 18, 18, new TranslationTextComponent(" > ").getFormattedText(), (button) ->  this.Control(3)));
+        addButton(new Button(
+        		guiLeft + 32, guiTop + 16, 18, 18, new TranslationTextComponent(" < ").getFormattedText(), (button) -> this.Control(4)));
         
         ItemStack cassette = this.container.getSlot(0).getStack().copy();
         if(cassette.getItem() instanceof AbstractAudioCassetteItem) {
@@ -60,10 +63,14 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
     private void Control(int opt) {
     	ItemStack cassette = this.container.getSlot(0).getStack().copy();
     	if(cassette.getItem() instanceof AbstractAudioCassetteItem) {    		
-    		if(opt==1 && !(audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(player))))) {Networking.INSTANCE.sendToServer(new CWalkmanPlayPacket("-"));}
-    		if(opt==2 && audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(player)))) {Networking.INSTANCE.sendToServer(new CWalkmanStopPacket());}
-    		if(opt==3) {Networking.INSTANCE.sendToServer(new WalkmanNextSongPacket("-"));}
-    		if(opt==4) {Networking.INSTANCE.sendToServer(new WalkmanPrevSongPacket());}
+    		if(opt==1 && !(audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(player)))))
+    			Networking.INSTANCE.sendToServer(new CWalkmanPlayPacket("-"));
+    		if(opt==2 && audiocassettes.proxy.isWalkmanPlaying(WalkmanItem.getID(WalkmanItem.getMPInHand(player))))
+    			Networking.INSTANCE.sendToServer(new CWalkmanStopPacket());
+    		if(opt==3) 
+    			Networking.INSTANCE.sendToServer(new WalkmanNextSongPacket("-"));
+    		if(opt==4) 
+    			Networking.INSTANCE.sendToServer(new WalkmanPrevSongPacket());
 
 	        this.container.stitle = AbstractAudioCassetteItem.getSongTitle(cassette);
 	        this.container.cursong = AbstractAudioCassetteItem.getCurrentSlot(cassette);
@@ -85,7 +92,11 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
     }
 
     protected void drawGuiContainerForegroundLayer(int mouseX, int mouseY) {
-        this.font.drawString(I18n.format("gui.audiocassettes.walkman"), this.xSize / 2 - this.font.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2, 6, 0xffffff);
+        this.font.drawString(
+        		I18n.format("gui.audiocassettes.walkman"),
+        		this.xSize / 2 - this.font.getStringWidth(I18n.format("gui.audiocassettes.walkman")) / 2,
+        		6, 0xffffff
+        		);
         String str = "-";
         if(this.container.getSlot(0).getHasStack())
         {
@@ -115,7 +126,10 @@ public class WalkmanScreen extends ContainerScreen<WalkmanContainer> {
 
         str = (" "+this.container.stitle+" ").substring(tstart < 0 ? 0 : tstart, tend < 0 ? 0 : tstart > tend ? tstart : tend);
         }
-        drawScaledString(Minecraft.getInstance().fontRenderer, (this.container.getSlot(0).getHasStack()? this.container.cursong+". "+str: "- "), 69, 22, 0.7F, 0xffffff);
+        drawScaledString(minecraft.fontRenderer,
+        		(this.container.getSlot(0).getHasStack()? this.container.cursong+". "+str: "- "),
+        		69, 22, 0.7F, 0xffffff
+        		);
     }
     
     public void drawScaledString(FontRenderer fontRendererIn, String text, int x, int y, float size, int color) {
