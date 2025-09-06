@@ -3,18 +3,19 @@ package com.shoxie.audiocassettes.networking;
 import java.util.function.Supplier;
 
 import com.shoxie.audiocassettes.audiocassettes;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
+
 
 public class SBoomBoxStopPacket{
 	
     private final BlockPos pos;
     private final String id;
 	
-    public SBoomBoxStopPacket(PacketBuffer buf) {
+    public SBoomBoxStopPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
-        id = buf.readString();
+        id = buf.readUtf();
     }
 	
 	public SBoomBoxStopPacket(BlockPos pos, String id) {
@@ -22,9 +23,9 @@ public class SBoomBoxStopPacket{
         this.id = id;
     }
 	
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
-        buf.writeString(id);
+        buf.writeUtf(id);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {

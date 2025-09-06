@@ -2,13 +2,13 @@ package com.shoxie.audiocassettes.networking;
 
 import java.util.function.Supplier;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
+import com.shoxie.audiocassettes.entity.TapeDeckEntity;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.network.NetworkEvent;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 public class TapeDeckStartWritingPacket{
 	
@@ -17,10 +17,10 @@ public class TapeDeckStartWritingPacket{
     private final String sname;
     private final boolean erase;
 
-    public TapeDeckStartWritingPacket(PacketBuffer buf) {
+    public TapeDeckStartWritingPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
         res = buf.readResourceLocation();
-        sname = buf.readString(128);
+        sname = buf.readUtf(128);
         erase = buf.readBoolean();
         
     }
@@ -32,19 +32,19 @@ public class TapeDeckStartWritingPacket{
         this.erase = erase;
     }
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeResourceLocation(res);
-        buf.writeString(sname);
+        buf.writeUtf(sname);
         buf.writeBoolean(erase);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
     	
         ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-            TapeDeckTile tile = (TapeDeckTile)sw.getTileEntity(pos);
-            tile.StartWrite(res,sname,erase);
+        	ServerLevel sw = ctx.get().getSender().serverLevel();
+            TapeDeckEntity entity = (TapeDeckEntity) sw.getBlockEntity(pos);
+            entity.StartWrite(res,sname,erase);
         });
         ctx.get().setPacketHandled(true);
     }

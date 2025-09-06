@@ -3,19 +3,19 @@ package com.shoxie.audiocassettes.networking;
 import java.util.function.Supplier;
 
 import com.shoxie.audiocassettes.item.WalkmanItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
 
 public class WalkmanPrevSongPacket{
 	
-    public WalkmanPrevSongPacket(PacketBuffer buf) {
+    public WalkmanPrevSongPacket(FriendlyByteBuf buf) {
     }
 	
 	public WalkmanPrevSongPacket() {
     }
 	
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {

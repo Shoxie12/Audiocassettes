@@ -3,16 +3,16 @@ package com.shoxie.audiocassettes.networking;
 import java.util.function.Supplier;
 
 import com.shoxie.audiocassettes.audiocassettes;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraftforge.network.NetworkEvent;
 
 public class SWalkmanStopPacket{
 	
 	private final String id;
 	private final boolean isowner;
 
-    public SWalkmanStopPacket(PacketBuffer buf) {
-        id = buf.readString();
+    public SWalkmanStopPacket(FriendlyByteBuf buf) {
+        id = buf.readUtf();
         isowner = buf.readBoolean();
     }
 	
@@ -21,8 +21,8 @@ public class SWalkmanStopPacket{
 		this.isowner = isowner;
     }
 	
-    public void toBytes(PacketBuffer buf) {
-    	buf.writeString(id);
+    public void toBytes(FriendlyByteBuf buf) {
+    	buf.writeUtf(id);
     	buf.writeBoolean(isowner);
     }
 	

@@ -2,18 +2,18 @@ package com.shoxie.audiocassettes.networking;
 
 import java.util.function.Supplier;
 
-import com.shoxie.audiocassettes.tile.BoomBoxTile;
+import com.shoxie.audiocassettes.entity.BoomBoxEntity;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.network.NetworkEvent;
 
 public class CBoomBoxStopPacket{
 	
     private final BlockPos pos;
 	
-    public CBoomBoxStopPacket(PacketBuffer buf) {
+    public CBoomBoxStopPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
     }
 	
@@ -21,15 +21,15 @@ public class CBoomBoxStopPacket{
         this.pos = pos;
     }
 	
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-        	BoomBoxTile tile = (BoomBoxTile)sw.getTileEntity(pos);
-            tile.stopMusic();
+        	ServerLevel sw = ctx.get().getSender().serverLevel();
+        	BoomBoxEntity entity = (BoomBoxEntity)sw.getBlockEntity(pos);
+            entity.stopMusic();
         });
         ctx.get().setPacketHandled(true);
     }

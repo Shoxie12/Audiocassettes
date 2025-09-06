@@ -1,119 +1,99 @@
 package com.shoxie.audiocassettes.item;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import com.shoxie.audiocassettes.audiocassettes;
-import com.shoxie.audiocassettes.capability.WalkmanCapability;
-import com.shoxie.audiocassettes.container.WalkmanContainer;
+import com.shoxie.audiocassettes.menu.WalkmanMenu;
 import com.shoxie.audiocassettes.networking.Networking;
 import com.shoxie.audiocassettes.networking.SWalkmanPlayPacket;
 import com.shoxie.audiocassettes.networking.SWalkmanStopPacket;
 
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Hand;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+
+import net.minecraft.core.Direction;
+import net.minecraft.core.NonNullList;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.*;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkHooks;
-import net.minecraftforge.items.CapabilityItemHandler;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 
-public class WalkmanItem extends Item implements INamedContainerProvider{
-	private static String name = "walkman";
+
+public class WalkmanItem extends Item implements MenuProvider,ICapabilityProvider {
+    public int slotscnt = 1;
+	public static String name = "walkman";
+    public final LazyOptional<ItemStackHandler> inventoryOptional = LazyOptional.of(() -> this.inventory);
 	public WalkmanItem() {
-		super(new Item.Properties().group(ItemGroup.MISC).maxStackSize(1));
-		setRegistryName(name);
+        super(new Item.Properties().stacksTo(1));
 	}
-	
+
+    @Override
+    public AbstractContainerMenu createMenu(int i, Inventory inv, Player player) {
+        return new WalkmanMenu(i, inv, player);
+    }
+
+    private final ItemStackHandler inventory = new ItemStackHandler(slotscnt) {
+        @Override
+        protected void onContentsChanged(int slot) {
+            super.onContentsChanged(slot);
+        }
+    };
+
     @Override
     @Nonnull
-    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, Hand hand) {
-    	if (!world.isRemote()) {
-            NetworkHooks.openGui((ServerPlayerEntity) player, this);
-        }
-        return new ActionResult<>(ActionResultType.PASS, player.getHeldItem( hand ));
+    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+            if (player instanceof ServerPlayer sp) {
+                NetworkHooks.openScreen(sp, this, player.getOnPos());
+            }
+        return InteractionResultHolder.success(player.getItemInHand(hand));
     }
-    
+
     @Override
-	public Container createMenu(int id, PlayerInventory inventory, PlayerEntity playerentity) {
-		return new WalkmanContainer(id, inventory, playerentity);
-	}
-	
-	@Nullable
-	@Override
-	public ICapabilityProvider initCapabilities(ItemStack stack, @Nullable CompoundNBT nbt) {
-		return new WalkmanCapability();
-	}
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
+        return this.inventoryOptional.cast();
+    }
     
 	@Override
 	@OnlyIn(Dist.CLIENT)
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-    	ItemStack cassette = getCassette(stack);
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flagIn) {
+            ItemStack cassette = getCassette(stack);
 
-		if(cassette.getItem() instanceof AbstractAudioCassetteItem)
-            tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks(
-            		"Current Song: "+AbstractAudioCassetteItem.getCurrentSlot(cassette)
-            		+". "+AbstractAudioCassetteItem.getSongTitle(cassette)));
-    }
-	
-    @Override
-    @Nonnull
-    public ITextComponent getDisplayName() {
-        return new TranslationTextComponent(this.getTranslationKey());
-    }
-
-    @Nullable
-    @Override
-    public CompoundNBT getShareTag(ItemStack stack) {
-        CompoundNBT nbt = stack.getOrCreateTag();
-        stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(
-                handler -> {
-                    nbt.put("walkman", Objects.requireNonNull(
-                    		CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.writeNBT(handler, null)));
-                }
-        );
-        return nbt;
+            if (cassette.getItem() instanceof AbstractAudioCassetteItem)
+                tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks(
+                        "Current Song: " + AbstractAudioCassetteItem.getCurrentSlot(cassette)
+                                + ". " + AbstractAudioCassetteItem.getSongTitle(cassette)));
     }
 
     @Override
-    public void readShareTag(ItemStack stack, @Nullable CompoundNBT nbt) {
-        super.readShareTag(stack, nbt);
-
-        if (nbt != null) {
-            stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(
-                    handler -> {
-                    	CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.readNBT(handler, null, nbt.get("walkman"));
-                    }
-            );
-        }
+    public @NotNull Component getDisplayName() {
+        return Component.translatable("block.audiocassettes.walkman");
     }
     
 	public static void setTagBool(ItemStack mp, String name, boolean val) {
 		if(mp.getItem() instanceof WalkmanItem) {
-			int intval = (val == true ? 1 : 0);
-			CompoundNBT nbt;
+			int intval = (val ? 1 : 0);
+            CompoundTag nbt;
 			if (mp.hasTag()) 
 				nbt = mp.getTag();
-			else nbt = new CompoundNBT();
+			else nbt = new CompoundTag();
             nbt.putInt(name, intval);
             mp.setTag(nbt);
 		}
@@ -164,43 +144,43 @@ public class WalkmanItem extends Item implements INamedContainerProvider{
 		return true;
 	}
 	
-	public static ItemStack getMPInHand(PlayerEntity player) {
+	public static ItemStack getMPInHand(Player player) {
 		if(player == null) return ItemStack.EMPTY;
-		ItemStack mp = player.getHeldItemMainhand();
+		ItemStack mp = player.getMainHandItem();
 		if(!(mp.getItem() instanceof WalkmanItem))
-			mp = player.getHeldItemOffhand();
+			mp = player.getOffhandItem();
 		return mp.getItem() instanceof WalkmanItem ? mp : ItemStack.EMPTY;
 	}
 	
-	public static ItemStack getMPbyID(PlayerEntity p, String id) {
-		if(p.inventory.getItemStack().getItem() instanceof WalkmanItem)
-			if(getID(p.inventory.getItemStack()).equals(id)) return p.inventory.getItemStack();
+	public static ItemStack getMPbyID(Player p, String id) {
+		if(p.getInventory().getSelected().getItem() instanceof WalkmanItem)
+			if(getID(p.getInventory().getSelected()).equals(id)) return p.getInventory().getSelected();
 
-		for(Slot s : p.container.inventorySlots)
-			if(s.getHasStack()) 
-				if(s.getStack().getItem() instanceof WalkmanItem) 
-					if(getID(s.getStack()).equals(id)) 
-						return s.getStack();
+		for(ItemStack s : p.getInventory().items)
+			if(!s.isEmpty())
+				if(s.getItem() instanceof WalkmanItem)
+					if(getID(s).equals(id))
+						return s;
 			
 		return ItemStack.EMPTY;
 	}
 
-    public static void playMusic(ItemStack mp, ServerPlayerEntity sender) {
+    public static void playMusic(ItemStack mp, ServerPlayer sender) {
     	
-    	List<ServerPlayerEntity> players = sender.getServerWorld().getPlayers();
+    	List<ServerPlayer> players = sender.getServer().getPlayerList().getPlayers();
     	WalkmanItem.setPlaying(mp, true);
     	ItemStack cassette = getCassette(mp);
     	if(cassette.getItem() instanceof AbstractAudioCassetteItem)
-	    	for(ServerPlayerEntity player : players) {
+	    	for(ServerPlayer player : players) {
 	    		if(
-	    				Math.abs(player.getPosX() - sender.getPosX()) < audiocassettes.WalkmanMaxSoundDistance &&
-	    				Math.abs(player.getPosY() - sender.getPosY()) < audiocassettes.WalkmanMaxSoundDistance &&
-	    				Math.abs(player.getPosZ() - sender.getPosZ()) < audiocassettes.WalkmanMaxSoundDistance
+	    				Math.abs(player.getX() - sender.getX()) < audiocassettes.WalkmanMaxSoundDistance &&
+	    				Math.abs(player.getY() - sender.getY()) < audiocassettes.WalkmanMaxSoundDistance &&
+	    				Math.abs(player.getZ() - sender.getZ()) < audiocassettes.WalkmanMaxSoundDistance
 	    				)
 	    		{
 					Networking.INSTANCE.sendTo(new SWalkmanPlayPacket(getID(mp),
-							sender.getUniqueID().toString(),player==sender ? true : false,cassette), 
-							player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT
+							sender.getUUID().toString(), player == sender,cassette),
+							player.connection.connection, NetworkDirection.PLAY_TO_CLIENT
 					);
 	    		}
 	    	}
@@ -208,8 +188,8 @@ public class WalkmanItem extends Item implements INamedContainerProvider{
     
 	public static String getID(ItemStack mp) {
 		if(mp.getItem() instanceof WalkmanItem) {
-	    if (!mp.hasTag()) { 
-			CompoundNBT nbt = new CompoundNBT();
+	    if (!mp.hasTag()) {
+            CompoundTag nbt = new CompoundTag();
 		    Random rand = new Random();
 		    int randomNum = rand.nextInt(10000);
 	        nbt.putString("uid", Integer.toString(randomNum));
@@ -221,37 +201,37 @@ public class WalkmanItem extends Item implements INamedContainerProvider{
 		else return null;
 	}
 		
-	public static void stopMusic(String mpid, ServerPlayerEntity sender, boolean isdropped) {
-    	List<ServerPlayerEntity> players = sender.getServerWorld().getPlayers();
-    	for(ServerPlayerEntity player : players) {
+	public static void stopMusic(String mpid, ServerPlayer sender, boolean isdropped) {
+    	List<ServerPlayer> players = sender.getServer().getPlayerList().getPlayers();
+    	for(ServerPlayer player : players) {
 			Networking.INSTANCE.sendTo(new SWalkmanStopPacket(mpid,
 					player == sender ? isdropped ? false : true : false),
-					player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+					player.connection.connection, NetworkDirection.PLAY_TO_CLIENT);
     	}
 	}
 	
 	public static ItemStack getCassette(ItemStack mp) {
+        AtomicReference<ItemStack> ret = new AtomicReference<>(ItemStack.EMPTY);
 		if(mp != null)
-			if(mp.getItem() instanceof WalkmanItem) {
-		final ItemStack[] it = new ItemStack[1];
-		mp.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
-		    it[0] = h.getStackInSlot(0);
-		});
-		return it[0];
-	}
-		return ItemStack.EMPTY;
+			if(mp.getItem() instanceof WalkmanItem)
+                mp.getCapability(net.minecraftforge.common.capabilities.ForgeCapabilities.ITEM_HANDLER).ifPresent(inventory -> {
+                    ret.set(inventory.getStackInSlot(0));
+                });
+
+
+		return ret.get();
 	}
 	
-	public static boolean isPlayerOwnMp(PlayerEntity p, String id) {
-		List<Slot> playerslots = p.container.inventorySlots;
-		if(p.inventory.getItemStack().getItem() instanceof WalkmanItem) {
-			if(getID(p.inventory.getItemStack()).equals(id)) return true;
+	public static boolean isPlayerOwnMp(Player p, String id) {
+		NonNullList<ItemStack> playerslots = p.getInventory().items;
+		if(p.getInventory().getSelected().getItem() instanceof WalkmanItem) {
+			if(getID(p.getInventory().getSelected()).equals(id)) return true;
 		}
 		else
-			for(Slot s : playerslots)
-				if(s.getHasStack()) 
-					if(s.getStack().getItem() instanceof WalkmanItem) 
-						if(getID(s.getStack()).equals(id)) 
+			for(ItemStack s : playerslots)
+				if(!s.isEmpty())
+					if(s.getItem() instanceof WalkmanItem)
+						if(getID(s).equals(id))
 							return true;
 		return false;
 	}

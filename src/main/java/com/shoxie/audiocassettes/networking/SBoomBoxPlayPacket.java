@@ -4,11 +4,11 @@ import java.util.function.Supplier;
 
 import com.shoxie.audiocassettes.audiocassettes;
 import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
 
 public class SBoomBoxPlayPacket{
 	
@@ -17,11 +17,11 @@ public class SBoomBoxPlayPacket{
 	private final boolean isowner;
 	private final ItemStack cassette;
 	
-    public SBoomBoxPlayPacket(PacketBuffer buf) {
+    public SBoomBoxPlayPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
-        id = buf.readString();
+        id = buf.readUtf();
         isowner = buf.readBoolean();
-        cassette = buf.readItemStack();
+        cassette = buf.readItem();
     }
 	
 	public SBoomBoxPlayPacket(BlockPos pos, String id, boolean isowner, ItemStack cassette) {
@@ -31,11 +31,11 @@ public class SBoomBoxPlayPacket{
         this.cassette = cassette;
     }
 	
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
-        buf.writeString(id);
+        buf.writeUtf(id);
         buf.writeBoolean(isowner);
-        buf.writeItemStack(cassette);
+        buf.writeItemStack(cassette,false);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {

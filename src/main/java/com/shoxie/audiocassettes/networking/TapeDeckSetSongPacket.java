@@ -2,19 +2,19 @@ package com.shoxie.audiocassettes.networking;
 
 import java.util.function.Supplier;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
+import com.shoxie.audiocassettes.entity.TapeDeckEntity;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.network.NetworkEvent;
 
 public class TapeDeckSetSongPacket{
 	
     private final BlockPos pos;
 	private final int song;
 	
-    public TapeDeckSetSongPacket(PacketBuffer buf) {
+    public TapeDeckSetSongPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
     	song = buf.readInt();
     }
@@ -24,16 +24,16 @@ public class TapeDeckSetSongPacket{
 		this.song = song;
     }
 	
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(song);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-            TapeDeckTile tile = (TapeDeckTile)sw.getTileEntity(pos);
-            tile.setSong(song);
+        	ServerLevel sw = ctx.get().getSender().serverLevel().getLevel();
+            TapeDeckEntity entity = (TapeDeckEntity)sw.getBlockEntity(pos);
+            entity.setSong(song);
         });
         ctx.get().setPacketHandled(true);
     }

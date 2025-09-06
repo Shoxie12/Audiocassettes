@@ -15,6 +15,14 @@
   "gui.audiocassettes.stopplaybtn": "Stop",
   "gui.audiocassettes.startripbtn": "Write",
   "gui.audiocassettes.erasewrbtn": "Erase",
-  "gui.audiocassettes.selectedtrack": "Selected Track"
-  
+  "gui.audiocassettes.selectedtrack": "Selected Track",
+  "gui.audiocassettes.configscreen.title": "AudioCassettes mod settings",
+  "options.audiocassettes.nowplayingannounce": "Announce song name",
+  "options.audiocassettes.nowplayingannounce.tooltip": "Announce the name of the song currently playing to everyone",
+  "options.audiocassettes.skipemptyslots": "Skip cassette empty slots",
+  "options.audiocassettes.skipemptyslots.tooltip": "If enabled, Walkman and Boombox will ignore empty slots of audio cassettes",
+  "options.audiocassettes.boomboxbmaxdist": "Boombox sound distance",
+  "options.audiocassettes.boomboxbmaxdist.tooltip": "Sets max distance (blocks) for a BoomBox where you can hear music",
+  "options.audiocassettes.walkmanmaxdist": "Walkman sound distance",
+  "options.audiocassettes.walkmanmaxdist.tooltip": "Sets max distance (blocks) for a BoomBox where you can hear music"
 }

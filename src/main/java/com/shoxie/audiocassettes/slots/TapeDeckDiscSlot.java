@@ -1,28 +1,28 @@
 package com.shoxie.audiocassettes.slots;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
+import com.shoxie.audiocassettes.entity.TapeDeckEntity;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.RecordItem;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class TapeDeckDiscSlot extends SlotItemHandler{
-	TapeDeckTile tile;
-	public TapeDeckDiscSlot(IItemHandler handler, int index, int xPosition, int yPosition, TapeDeckTile tile) {
+	TapeDeckEntity entity;
+	public TapeDeckDiscSlot(IItemHandler handler, int index, int xPosition, int yPosition, TapeDeckEntity entity) {
 		super(handler, index, xPosition, yPosition);
-		this.tile = tile;
+		this.entity = entity;
 	}
 
 	@Override
-	public boolean isItemValid(ItemStack stack) {
-	    if(stack.getItem() instanceof net.minecraft.item.MusicDiscItem)
+	public boolean mayPlace(ItemStack stack) {
+	    if(stack.getItem() instanceof RecordItem)
 	    	return true;
 	    return false;
 	}
 	
 	@Override
-	public void onSlotChanged() {
-		tile.stopWrite();
-	    this.inventory.markDirty();
+	public void setChanged() {
+	    super.setChanged();
 	}
 }

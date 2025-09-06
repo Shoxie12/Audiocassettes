@@ -1,8 +1,8 @@
 package com.shoxie.audiocassettes.networking;
 
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
 
 public class Networking {
 
@@ -17,101 +17,117 @@ public class Networking {
         INSTANCE = NetworkRegistry.newSimpleChannel(
         		new ResourceLocation(com.shoxie.audiocassettes.audiocassettes.MODID, "audiocassettes"), () -> "1.0", s -> true, s -> true);
 
-        INSTANCE.registerMessage(nextID(),
-        		TapeDeckStartWritingPacket.class,
-        		TapeDeckStartWritingPacket::toBytes,
-        		TapeDeckStartWritingPacket::new,
-        		TapeDeckStartWritingPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		TapeDeckSetSongPacket.class,
-        		TapeDeckSetSongPacket::toBytes,
-        		TapeDeckSetSongPacket::new,
-        		TapeDeckSetSongPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		CBoomBoxPlayPacket.class,
-        		CBoomBoxPlayPacket::toBytes,
-        		CBoomBoxPlayPacket::new,
-        		CBoomBoxPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		SBoomBoxPlayPacket.class,
-        		SBoomBoxPlayPacket::toBytes,
-        		SBoomBoxPlayPacket::new,
-        		SBoomBoxPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		CBoomBoxStopPacket.class,
-        		CBoomBoxStopPacket::toBytes,
-        		CBoomBoxStopPacket::new,
-        		CBoomBoxStopPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		SBoomBoxStopPacket.class,
-        		SBoomBoxStopPacket::toBytes,
-        		SBoomBoxStopPacket::new,
-        		SBoomBoxStopPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		BoomBoxNextSongPacket.class,
-        		BoomBoxNextSongPacket::toBytes,
-        		BoomBoxNextSongPacket::new,
-        		BoomBoxNextSongPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		BoomBoxPrevSongPacket.class,
-        		BoomBoxPrevSongPacket::toBytes,
-        		BoomBoxPrevSongPacket::new,
-        		BoomBoxPrevSongPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		CWalkmanPlayPacket.class,
-        		CWalkmanPlayPacket::toBytes,
-        		CWalkmanPlayPacket::new,
-        		CWalkmanPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		SWalkmanPlayPacket.class,
-        		SWalkmanPlayPacket::toBytes,
-        		SWalkmanPlayPacket::new,
-        		SWalkmanPlayPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		CWalkmanStopPacket.class,
-        		CWalkmanStopPacket::toBytes,
-        		CWalkmanStopPacket::new,
-        		CWalkmanStopPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		SWalkmanStopPacket.class,
-        		SWalkmanStopPacket::toBytes,
-        		SWalkmanStopPacket::new,
-        		SWalkmanStopPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		WalkmanNextSongPacket.class,
-        		WalkmanNextSongPacket::toBytes,
-        		WalkmanNextSongPacket::new,
-        		WalkmanNextSongPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		WalkmanPrevSongPacket.class,
-        		WalkmanPrevSongPacket::toBytes,
-        		WalkmanPrevSongPacket::new,
-        		WalkmanPrevSongPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		WalkmanOnDropPacket.class,
-        		WalkmanOnDropPacket::toBytes,
-        		WalkmanOnDropPacket::new,
-        		WalkmanOnDropPacket::handle);
-        
-        INSTANCE.registerMessage(nextID(),
-        		TapeDeckStopWritePacket.class,
-        		TapeDeckStopWritePacket::toBytes,
-        		TapeDeckStopWritePacket::new,
-        		TapeDeckStopWritePacket::handle);
+        //TapeDeckStartWritingPacket
+        INSTANCE.messageBuilder(TapeDeckStartWritingPacket.class, nextID())
+                .encoder(TapeDeckStartWritingPacket::toBytes)
+                .decoder(TapeDeckStartWritingPacket::new)
+                .consumerMainThread(TapeDeckStartWritingPacket::handle)
+                .add();
+
+        //TapeDeckSetSongPacket
+        INSTANCE.messageBuilder(TapeDeckSetSongPacket.class, nextID())
+                .encoder(TapeDeckSetSongPacket::toBytes)
+                .decoder(TapeDeckSetSongPacket::new)
+                .consumerMainThread(TapeDeckSetSongPacket::handle)
+                .add();
+
+        //CBoomBoxPlayPacket
+        INSTANCE.messageBuilder(CBoomBoxPlayPacket.class, nextID())
+                .encoder(CBoomBoxPlayPacket::toBytes)
+                .decoder(CBoomBoxPlayPacket::new)
+                .consumerMainThread(CBoomBoxPlayPacket::handle)
+                .add();
+
+        //SBoomBoxPlayPacket
+        INSTANCE.messageBuilder(SBoomBoxPlayPacket.class, nextID())
+                .encoder(SBoomBoxPlayPacket::toBytes)
+                .decoder(SBoomBoxPlayPacket::new)
+                .consumerMainThread(SBoomBoxPlayPacket::handle)
+                .add();
+
+        //CBoomBoxStopPacket
+        INSTANCE.messageBuilder(CBoomBoxStopPacket.class, nextID())
+                .encoder(CBoomBoxStopPacket::toBytes)
+                .decoder(CBoomBoxStopPacket::new)
+                .consumerMainThread(CBoomBoxStopPacket::handle)
+                .add();
+
+        //SBoomBoxStopPacket
+        INSTANCE.messageBuilder(SBoomBoxStopPacket.class, nextID())
+                .encoder(SBoomBoxStopPacket::toBytes)
+                .decoder(SBoomBoxStopPacket::new)
+                .consumerMainThread(SBoomBoxStopPacket::handle)
+                .add();
+
+        //BoomBoxNextSongPacket
+        INSTANCE.messageBuilder(BoomBoxNextSongPacket.class, nextID())
+                .encoder(BoomBoxNextSongPacket::toBytes)
+                .decoder(BoomBoxNextSongPacket::new)
+                .consumerMainThread(BoomBoxNextSongPacket::handle)
+                .add();
+
+        //BoomBoxPrevSongPacket
+        INSTANCE.messageBuilder(BoomBoxPrevSongPacket.class, nextID())
+                .encoder(BoomBoxPrevSongPacket::toBytes)
+                .decoder(BoomBoxPrevSongPacket::new)
+                .consumerMainThread(BoomBoxPrevSongPacket::handle)
+                .add();
+
+        //CWalkmanPlayPacket
+        INSTANCE.messageBuilder(CWalkmanPlayPacket.class, nextID())
+                .encoder(CWalkmanPlayPacket::toBytes)
+                .decoder(CWalkmanPlayPacket::new)
+                .consumerMainThread(CWalkmanPlayPacket::handle)
+                .add();
+
+        //SWalkmanPlayPacket
+        INSTANCE.messageBuilder(SWalkmanPlayPacket.class, nextID())
+                .encoder(SWalkmanPlayPacket::toBytes)
+                .decoder(SWalkmanPlayPacket::new)
+                .consumerMainThread(SWalkmanPlayPacket::handle)
+                .add();
+
+        //CWalkmanStopPacket
+        INSTANCE.messageBuilder(CWalkmanStopPacket.class, nextID())
+                .encoder(CWalkmanStopPacket::toBytes)
+                .decoder(CWalkmanStopPacket::new)
+                .consumerMainThread(CWalkmanStopPacket::handle)
+                .add();
+
+        //SWalkmanStopPacket
+        INSTANCE.messageBuilder(SWalkmanStopPacket.class, nextID())
+                .encoder(SWalkmanStopPacket::toBytes)
+                .decoder(SWalkmanStopPacket::new)
+                .consumerMainThread(SWalkmanStopPacket::handle)
+                .add();
+
+        //WalkmanNextSongPacket
+        INSTANCE.messageBuilder(WalkmanNextSongPacket.class, nextID())
+                .encoder(WalkmanNextSongPacket::toBytes)
+                .decoder(WalkmanNextSongPacket::new)
+                .consumerMainThread(WalkmanNextSongPacket::handle)
+                .add();
+
+        //WalkmanPrevSongPacket
+        INSTANCE.messageBuilder(WalkmanPrevSongPacket.class, nextID())
+                .encoder(WalkmanPrevSongPacket::toBytes)
+                .decoder(WalkmanPrevSongPacket::new)
+                .consumerMainThread(WalkmanPrevSongPacket::handle)
+                .add();
+
+        //WalkmanOnDropPacket
+        INSTANCE.messageBuilder(WalkmanOnDropPacket.class, nextID())
+                .encoder(WalkmanOnDropPacket::toBytes)
+                .decoder(WalkmanOnDropPacket::new)
+                .consumerMainThread(WalkmanOnDropPacket::handle)
+                .add();
+
+        //TapeDeckStopWritePacket
+        INSTANCE.messageBuilder(TapeDeckStopWritePacket.class, nextID())
+                .encoder(TapeDeckStopWritePacket::toBytes)
+                .decoder(TapeDeckStopWritePacket::new)
+                .consumerMainThread(TapeDeckStopWritePacket::handle)
+                .add();
         
     }
 }

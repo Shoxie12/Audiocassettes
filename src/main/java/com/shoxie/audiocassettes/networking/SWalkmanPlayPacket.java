@@ -4,9 +4,9 @@ import java.util.function.Supplier;
 
 import com.shoxie.audiocassettes.audiocassettes;
 import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.PacketBuffer;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.network.NetworkEvent;
 
 public class SWalkmanPlayPacket{
 	
@@ -15,11 +15,11 @@ public class SWalkmanPlayPacket{
     private final ItemStack cassette;
     private final boolean isowner;
 	
-    public SWalkmanPlayPacket(PacketBuffer buf) {
-        id = buf.readString();
-        playerid = buf.readString();
+    public SWalkmanPlayPacket(FriendlyByteBuf buf) {
+        id = buf.readUtf();
+        playerid = buf.readUtf();
         isowner = buf.readBoolean();
-        cassette = buf.readItemStack();
+        cassette = buf.readItem();
     }
 	
 	public SWalkmanPlayPacket(String id, String playerid, boolean isowner, ItemStack cassette) {
@@ -29,11 +29,11 @@ public class SWalkmanPlayPacket{
         this.cassette = cassette;
     }
 	
-    public void toBytes(PacketBuffer buf) {
-        buf.writeString(id);
-        buf.writeString(playerid);
+    public void toBytes(FriendlyByteBuf buf) {
+        buf.writeUtf(id);
+        buf.writeUtf(playerid);
         buf.writeBoolean(isowner);
-        buf.writeItemStack(cassette);
+        buf.writeItemStack(cassette,false);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {

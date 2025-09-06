@@ -2,95 +2,95 @@ package com.shoxie.audiocassettes.block;
 
 import javax.annotation.Nullable;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
+import com.shoxie.audiocassettes.entity.TapeDeckEntity;
+import com.shoxie.audiocassettes.init.Init;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.network.NetworkHooks;
+import org.jetbrains.annotations.NotNull;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.INamedContainerProvider;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateContainer;
-import net.minecraft.state.properties.BlockStateProperties;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
-import net.minecraftforge.common.ToolType;
-import net.minecraftforge.fml.network.NetworkHooks;
-import net.minecraftforge.items.CapabilityItemHandler;
 
-public class TapeDeckBlock extends Block{
+public class TapeDeckBlock extends Block implements EntityBlock {
 	public static String name = "tapedeck";
-    public TapeDeckBlock () {
-        super(Properties.create(Material.IRON)
-        		.sound(SoundType.METAL)
-        		.hardnessAndResistance(2.0f)
-        		.harvestLevel(1)
-        		.harvestTool(ToolType.PICKAXE)
-        );
-        setRegistryName(name);
-    }
-    
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
+    public static final DirectionProperty FACING = DirectionProperty.create("facing", Direction.Plane.HORIZONTAL);
+    public TapeDeckBlock(BlockBehaviour.Properties properties) {
+        super(properties);
     }
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-    	return new TapeDeckTile();
+    public BlockEntity newBlockEntity(BlockPos p_153215_, BlockState p_153216_) {
+        return new TapeDeckEntity(p_153215_, p_153216_);
     }
-    
+
+    @Nullable
     @Override
-    public ActionResultType onBlockActivated(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockRayTraceResult result) {
-        if (!world.isRemote) {
-            TileEntity tileEntity = world.getTileEntity(pos);
-            if (tileEntity instanceof INamedContainerProvider) {
-                NetworkHooks.openGui((ServerPlayerEntity) player, (INamedContainerProvider) tileEntity, tileEntity.getPos());
-                return ActionResultType.SUCCESS;
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+        return type == Init.TAPEDECK_ENTITY.get() ? TapeDeckEntity::tick : null;
+    }
+
+    @Override
+    public @NotNull InteractionResult use(BlockState state, Level Level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult result) {
+            BlockEntity blockEntity = Level.getBlockEntity(pos);
+            if (blockEntity instanceof TapeDeckEntity) {
+                if (player instanceof ServerPlayer sp) {
+                    NetworkHooks.openScreen(sp, (MenuProvider) blockEntity, pos);
+                }
+                return InteractionResult.SUCCESS;
+            }
+        return InteractionResult.PASS;
+    }
+
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
+        builder.add(FACING);
+    }
+
+    @Override
+    public void onRemove(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull BlockState newState, boolean isMoving) {
+        if (!level.isClientSide()) {
+            BlockEntity _entity = level.getBlockEntity(pos);
+            if (_entity instanceof TapeDeckEntity entity) {
+                ItemStackHandler inv = entity.getInventory();
+                level.addFreshEntity(
+                        new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                                inv.getStackInSlot(0)
+                        )
+
+                );
+
+                level.addFreshEntity(
+                        new ItemEntity(level, pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D,
+                                inv.getStackInSlot(1)
+                        )
+
+                );
             }
         }
-        return ActionResultType.PASS;
-    }
-    
-    @Override
-    public void onBlockPlacedBy(World world, BlockPos pos, BlockState state, @Nullable LivingEntity entity, ItemStack stack) {
-        if (entity != null) {
-            world.setBlockState(pos, state.with(BlockStateProperties.FACING, getFacingFromEntity(pos, entity)), 2);
-        }
-    }
-
-    public static Direction getFacingFromEntity(BlockPos clickedBlock, LivingEntity entity) {
-        return Direction.getFacingFromVector(
-        		(float) (entity.getPosX() - clickedBlock.getX()), 
-        		(float) (entity.getPosY() - clickedBlock.getY()), 
-        		(float) (entity.getPosZ() - clickedBlock.getZ())
-        		);
-    }
-
-    @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-        builder.add(BlockStateProperties.FACING);
-    }
-    
-    @Override
-    public void onReplaced(BlockState state, World worldIn, BlockPos pos, BlockState newState, boolean isMoving) {
-    	if (state.hasTileEntity() && state.getBlock() != newState.getBlock()) {
-        	worldIn.getTileEntity(pos).getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY).ifPresent(h -> {
-                for (int i = 0; i < h.getSlots(); i++) {
-                    spawnAsEntity(worldIn, pos, h.getStackInSlot(i));
-                }
-            });
-            worldIn.removeTileEntity(pos);
-        }
+        super.onRemove(state, level, pos, newState, isMoving);
     }
 }

@@ -2,18 +2,18 @@ package com.shoxie.audiocassettes.networking;
 
 import java.util.function.Supplier;
 
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
+import com.shoxie.audiocassettes.entity.TapeDeckEntity;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.network.NetworkEvent;
 
 public class TapeDeckStopWritePacket{
 	
     private final BlockPos pos;
 
-    public TapeDeckStopWritePacket(PacketBuffer buf) {
+    public TapeDeckStopWritePacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
         
     }
@@ -22,16 +22,16 @@ public class TapeDeckStopWritePacket{
         this.pos = pos;
     }
 
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
     }
 
     public void handle(Supplier<NetworkEvent.Context> ctx) {
     	
         ctx.get().enqueueWork(() -> {
-        	ServerWorld sw = ctx.get().getSender().getServerWorld();
-            TapeDeckTile tile = (TapeDeckTile)sw.getTileEntity(pos);
-            tile.stopWrite();
+        	ServerLevel sw = ctx.get().getSender().serverLevel();
+            TapeDeckEntity entity = (TapeDeckEntity)sw.getBlockEntity(pos);
+            entity.stopWrite();
         });
         ctx.get().setPacketHandled(true);
     }

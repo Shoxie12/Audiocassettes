@@ -1,14 +1,13 @@
 package com.shoxie.audiocassettes.item;
 
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 
-public class CassetteFrameItem extends Item{
+import net.minecraft.world.item.Item;
 
-	private static String name = "cassetteframe";
+public class CassetteFrameItem extends Item {
+
+	public static String name = "cassetteframe";
 	public CassetteFrameItem() {
-		super(new Item.Properties().group(ItemGroup.MISC));
-		setRegistryName(name);
+        super(new Item.Properties());
 	}
 
 }

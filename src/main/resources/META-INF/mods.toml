@@ -4,12 +4,14 @@ issueTrackerURL="https://github.com/Shoxie12/Audiocassettes/issues"
 license="LGPL License"
 [[mods]]
 modId="audiocassettes"
-version="1.1"
+version="1.2"
 displayName="Audio Cassettes"
 displayURL="https://www.curseforge.com/minecraft/mc-mods/audiocassettes"
-credits="Thanks to McJty, Kenny Tutorials and many many other for their modding tutorials! This mod is partically based on Walkman by AshIndigo"
+credits="Thanks to McJty, Kenny Tutorials and many many other for their modding tutorials! This mod is partically based on Walkman mod by AshIndigo"
 authors="Shoxie"
 description='''
-This mod adds an audiocassettes.
+This mod adds an audio cassettes to the game.
+Mod also adds a way to record cassettes and listen the music on it
+This mod is desined to be used alongside with other mods/resourcepacks that can add more music discs
 ...
 '''

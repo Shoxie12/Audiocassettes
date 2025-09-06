@@ -2,19 +2,19 @@ package com.shoxie.audiocassettes.networking;
 
 import java.util.function.Supplier;
 
-import com.shoxie.audiocassettes.tile.BoomBoxTile;
+import com.shoxie.audiocassettes.entity.BoomBoxEntity;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraftforge.network.NetworkEvent;
 
 public class BoomBoxNextSongPacket{
 	
     private final BlockPos pos;
     private final boolean manually;
 	
-    public BoomBoxNextSongPacket(PacketBuffer buf) {
+    public BoomBoxNextSongPacket(FriendlyByteBuf buf) {
         pos = buf.readBlockPos();
         manually = buf.readBoolean();
     }
@@ -24,24 +24,24 @@ public class BoomBoxNextSongPacket{
         this.manually = manually;
     }
 	
-    public void toBytes(PacketBuffer buf) {
+    public void toBytes(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeBoolean(manually);
     }
 	
     public void handle(Supplier<NetworkEvent.Context> ctx) {
         ctx.get().enqueueWork(() -> {
-            ServerWorld sw = ctx.get().getSender().getServerWorld();
-            BoomBoxTile tile = (BoomBoxTile)sw.getTileEntity(pos);
-	        if(ctx.get().getSender().getUniqueID().toString().equals(tile.owneruid) || manually) {
-	        	boolean switched = tile.switchSong(true);
+            ServerLevel sw = ctx.get().getSender().serverLevel().getLevel();
+            BoomBoxEntity entity = (BoomBoxEntity)sw.getBlockEntity(pos);
+	        if(ctx.get().getSender().getUUID().toString().equals(entity.owneruid) || manually) {
+	        	boolean switched = entity.switchSong(true);
 	            if(manually) {
-	            	if(tile.isPlaying) {
-	            		tile.stopMusic();
-	            		tile.isPlaying = false;
+	            	if(entity.isPlaying) {
+	            		entity.stopMusic();
+	            		entity.isPlaying = false;
 	            	}
 	            }
-	            else if(switched) tile.playMusic(ctx.get().getSender()); else tile.stopMusic();
+	            else if(switched) entity.playMusic(ctx.get().getSender()); else entity.stopMusic();
             }
         });
         ctx.get().setPacketHandled(true);

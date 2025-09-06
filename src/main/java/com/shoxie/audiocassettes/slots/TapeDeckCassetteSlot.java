@@ -1,34 +1,34 @@
 package com.shoxie.audiocassettes.slots;
 
 import com.shoxie.audiocassettes.item.AbstractAudioCassetteItem;
-import com.shoxie.audiocassettes.tile.TapeDeckTile;
+import com.shoxie.audiocassettes.entity.TapeDeckEntity;
 
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
 
 public class TapeDeckCassetteSlot extends SlotItemHandler{
-	TapeDeckTile tile;
-	public TapeDeckCassetteSlot(IItemHandler handler, int index, int xPosition, int yPosition, TapeDeckTile tile) {
+	TapeDeckEntity entity;
+	public TapeDeckCassetteSlot(IItemHandler handler, int index, int xPosition, int yPosition, TapeDeckEntity entity) {
 		super(handler, index, xPosition, yPosition);
-		this.tile = tile;
+		this.entity = entity;
 	}
 
 	@Override
-	public boolean isItemValid(ItemStack stack) {
+	public boolean mayPlace(ItemStack stack) {
 	    if(stack.getItem() instanceof AbstractAudioCassetteItem)
 	    	return true;
 	    return false;
 	}
 	
 	@Override
-	public void onSlotChanged() {
-		if(this.getHasStack())
-			if(this.getStack().getItem() instanceof AbstractAudioCassetteItem)
-				if(!this.getStack().hasTag()) {
-			        CompoundNBT nbt = new CompoundNBT();
-			        ItemStack stack = this.getStack();
+	public void setChanged() {
+		if(!this.getItem().isEmpty())
+			if(this.getItem().getItem() instanceof AbstractAudioCassetteItem)
+				if(!this.getItem().hasTag()) {
+			        CompoundTag nbt = new CompoundTag();
+			        ItemStack stack = this.getItem();
 					for(int i=1;i<=AbstractAudioCassetteItem.getMaxSlots(stack);i++)
 					{
 						nbt.putString("Song"+i, ("audiocassettes"+":"+"empty"));
@@ -37,8 +37,6 @@ public class TapeDeckCassetteSlot extends SlotItemHandler{
 					nbt.putInt("ms", 1);
 					stack.setTag(nbt);
 				}
-		
-		tile.stopWrite();
-	    this.inventory.markDirty();
+	    super.setChanged();
 	}
 }

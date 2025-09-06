@@ -1,19 +1,26 @@
 package com.shoxie.audiocassettes.proxy;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 
 public class ServerProxy implements IProxy {
-	
-	@Override
-	public PlayerEntity getClientPlayer() {
+
+    @Override
+    public Minecraft getMinecraft() {
+        return null;
+    }
+
+    @Override
+	public Player getClientPlayer() {
 		return null;
 	}
 	
 	@Override
-	public World getClientWorld() {
+	public Level getClientLevel() {
 		return null;
 	}
 
@@ -30,7 +37,7 @@ public class ServerProxy implements IProxy {
 	} 
 	
 	@Override
-	public void BoomBoxPlay(BlockPos pos, String id,boolean isowner, SoundEvent snd, String songtitle) {
+	public void BoomBoxPlay(BlockPos pos, String id, boolean isowner, SoundEvent snd, String songtitle) {
 	}
 
 	@Override

@@ -1,12 +1,12 @@
 {
   "parent": "block/cube",
   "textures": {
-    "particle": "audiocassettes:blocks/bb_side",
-    "down": "audiocassettes:blocks/bb_side",
-    "up": "audiocassettes:blocks/bb_side",
-    "east": "audiocassettes:blocks/bb_side",
-    "west": "audiocassettes:blocks/bb_side",
-    "north": "audiocassettes:blocks/bb_face",
-    "south": "audiocassettes:blocks/bb_side"
+    "particle": "audiocassettes:block/bb_side",
+    "down": "audiocassettes:block/bb_side",
+    "up": "audiocassettes:block/bb_side",
+    "east": "audiocassettes:block/bb_side",
+    "west": "audiocassettes:block/bb_side",
+    "north": "audiocassettes:block/bb_face",
+    "south": "audiocassettes:block/bb_side"
   }
 }

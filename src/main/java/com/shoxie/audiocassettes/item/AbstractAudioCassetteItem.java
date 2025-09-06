@@ -4,38 +4,36 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import com.shoxie.audiocassettes.ModSoundEvents;
-
-import net.minecraft.client.resources.I18n;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.SoundEvent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
-public abstract class AbstractAudioCassetteItem extends Item{
+import static com.shoxie.audiocassettes.init.Init.BLANK_RECORD_SOUND_EVENT;
+
+public abstract class AbstractAudioCassetteItem extends Item {
 	
 	protected String name;
 	protected int maxslots;
 	protected int MaxWriteTime;
-	public AbstractAudioCassetteItem() {
-		super(new Item.Properties().group(ItemGroup.MISC).maxStackSize(1));
-	}
+    public AbstractAudioCassetteItem() {
+        super(new Item.Properties());
+    }
 	
 	@Override
 	@OnlyIn(Dist.CLIENT)
-	public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltip, TooltipFlag flagIn) {
 		if (stack.hasTag()) {
 			int song = getCurrentSlot(stack);
 			int max = getMaxSlots(stack);
-			boolean fdots = (song > 3 ? true : false);
-			boolean ldots = (song < max-3 ? true : false);
+			boolean fdots = (song > 3);
+			boolean ldots = (song < max - 3);
 			int k = (song > 3 ? song < max-3 ? song-3 : max-6 : 1);
 			int j = (song > 3 ? song < max-3 ? song+3 : max : 7);
 			for(int i=k;i<=j;i++)
@@ -44,9 +42,9 @@ public abstract class AbstractAudioCassetteItem extends Item{
 						tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks("..."));
 					else {
 						String str = stack.getTag().getString("SongName"+i);
-						if(str == "--Empty--")
-							str = I18n.format("sound.audiocassettes.emptysound");
-						tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks((i==song? "• " : "")+i+". "+str));
+						if(str.equals("--Empty--"))
+							str = Component.translatable("sound.audiocassettes.emptysound").getString();
+						tooltip.add(net.minecraftforge.common.ForgeHooks.newChatWithLinks((i==song? "EW " : "")+i+". "+str));
 					}
 		}
 	}
@@ -55,12 +53,12 @@ public abstract class AbstractAudioCassetteItem extends Item{
 		if(stack == null) return;
 		if(!(stack.getItem() instanceof AbstractAudioCassetteItem)) return;
 		AbstractAudioCassetteItem c = (AbstractAudioCassetteItem) stack.getItem();
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt = new CompoundTag();
 	    if (stack.hasTag())
 	        nbt = stack.getTag();
 	    else
 	    {
-	        nbt = new CompoundNBT();
+	        nbt = new CompoundTag();
 			for(int i=1;i<=c.maxslots;i++)
 			{
 				nbt.putString("Song"+i, ("audiocassettes"+":"+"empty"));
@@ -77,16 +75,18 @@ public abstract class AbstractAudioCassetteItem extends Item{
 	}
 	
 	public static SoundEvent getCurrentSong(ItemStack stack) {
-		if(stack == null) return ModSoundEvents.EMPTY;
-		if(!(stack.getItem() instanceof AbstractAudioCassetteItem)) return ModSoundEvents.EMPTY;
+		if(stack == null) return BLANK_RECORD_SOUND_EVENT.get();
+		if(!(stack.getItem() instanceof AbstractAudioCassetteItem)) return BLANK_RECORD_SOUND_EVENT.get();
 		AbstractAudioCassetteItem c = (AbstractAudioCassetteItem) stack.getItem();
 		int ms = AbstractAudioCassetteItem.getCurrentSlot(stack);
 		if(ms < 1 || ms > c.maxslots)
-			return ModSoundEvents.EMPTY;
+			return BLANK_RECORD_SOUND_EVENT.get();
 		
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt;
 		nbt = stack.getTag();
-		return new SoundEvent(new ResourceLocation(nbt.getString("Song"+ms)));
+        var snd = SoundEvent.createFixedRangeEvent(new ResourceLocation(nbt.getString("Song"+ms)),128);
+        snd.getRange(5);
+		return snd;
 	}
 	
 	public static int getMaxSlots(ItemStack stack) {
@@ -99,7 +99,7 @@ public abstract class AbstractAudioCassetteItem extends Item{
 	public static int getCurrentSlot(ItemStack stack) {
 		if(stack == null) return 0;
 		if(!(stack.getItem() instanceof AbstractAudioCassetteItem)) return 0;
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt = new CompoundTag();
 		if (stack.hasTag()) {
 		    nbt = stack.getTag();
 		    return nbt.getInt("ms");
@@ -113,14 +113,12 @@ public abstract class AbstractAudioCassetteItem extends Item{
 	
 	public static String getSongTitle(ItemStack stack) {
 		if(stack == null) return "--Empty--";
-		if(stack.getItem() instanceof AbstractAudioCassetteItem) {
-			AbstractAudioCassetteItem c = (AbstractAudioCassetteItem) stack.getItem();
-			int ms = AbstractAudioCassetteItem.getCurrentSlot(stack);
+		if(stack.getItem() instanceof AbstractAudioCassetteItem c) {
+            int ms = AbstractAudioCassetteItem.getCurrentSlot(stack);
 			if(ms < 1 || ms > c.maxslots)
 				return "--Empty--";
 			
-			CompoundNBT nbt = new CompoundNBT();
-			nbt = stack.getTag();
+			CompoundTag nbt = stack.getTag();
 			return nbt.getString("SongName"+ms);
 		}
 		else return "--Empty--";
@@ -130,7 +128,7 @@ public abstract class AbstractAudioCassetteItem extends Item{
 		if(stack == null) return;
 		if(!(stack.getItem() instanceof AbstractAudioCassetteItem)) return;
 		int newsong = 1;
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt;
 		    if (stack.hasTag()) {
 		    	int maxsongs = 0;
 		    	int cursong = 0;
@@ -172,7 +170,7 @@ public abstract class AbstractAudioCassetteItem extends Item{
 	
 	public static boolean isSlotEmpty(int i, ItemStack c) {
 		if(c == null || c == ItemStack.EMPTY || !c.hasTag()) return true;
-		CompoundNBT nbt = new CompoundNBT();
+		CompoundTag nbt;
 		nbt = c.getTag();
 		return nbt.getString("Song"+i).equals("audiocassettes:empty");
 	}

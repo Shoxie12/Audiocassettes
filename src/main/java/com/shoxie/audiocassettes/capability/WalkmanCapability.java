@@ -1,40 +1,33 @@
 package com.shoxie.audiocassettes.capability;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemStackHandler;
+import org.jetbrains.annotations.NotNull;
 
-public class WalkmanCapability implements ICapabilitySerializable<CompoundNBT> {
-	
+public class WalkmanCapability implements ICapabilitySerializable<CompoundTag> {
+
     private final ItemStackHandler h = new ItemStackHandler(1);
     private final LazyOptional<IItemHandler> whandler = LazyOptional.of(() -> h);
 
-	@Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == CapabilityItemHandler.ITEM_HANDLER_CAPABILITY) {
-            return whandler.cast();
-        }
-        return LazyOptional.empty();
+    public CompoundTag serializeNBT() {
+        CompoundTag tag = new CompoundTag();
+        tag.put("walkman", this.h.serializeNBT());
+        return tag;
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        CompoundNBT nbt = new CompoundNBT();
-        nbt.put("walkman", CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.writeNBT(h, null));
-        return nbt;
+    public void deserializeNBT(CompoundTag tag) {
+        this.h.deserializeNBT(tag.getCompound("walkman"));
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
-        CapabilityItemHandler.ITEM_HANDLER_CAPABILITY.readNBT(h, null, nbt.get("walkman"));
+    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @org.jetbrains.annotations.Nullable Direction side) {
+        return whandler.cast();
     }
 }
